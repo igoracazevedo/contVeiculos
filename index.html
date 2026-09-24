@@ -157,58 +157,65 @@
     }
     .status-msg { margin-top: 12px; font-size: 13px; text-align: center; font-weight: 600; }
 
-    /* Itens de Consulta Recolhíveis / Expansíveis */
+    /* Nível 1: Grupo de Ano */
+    .year-group {
+      background: #111c33; border-radius: 16px; margin-bottom: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12); overflow: hidden;
+    }
+    .year-header {
+      background: #162444; padding: 14px 16px;
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; user-select: none; border-bottom: 1px solid transparent;
+      transition: background 0.15s;
+    }
+    .year-header:active { background: #1c2e56; }
+    .year-group.open .year-header { border-bottom-color: rgba(255, 255, 255, 0.08); }
+    .year-left { display: flex; align-items: center; gap: 8px; }
+    .year-chevron {
+      font-size: 12px; color: #38bdf8; transition: transform 0.2s ease;
+      display: inline-block;
+    }
+    .year-group.open .year-chevron { transform: rotate(180deg); }
+    .year-label { font-weight: 800; font-size: 16px; color: #ffffff; }
+    .year-qty { font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 2px; }
+    .year-right { text-align: right; }
+    .year-total-val { font-weight: 800; font-size: 15px; }
+    .year-total-vol { font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 2px; }
+    .year-content { display: none; padding: 10px; }
+    .year-group.open .year-content { display: block; }
+
+    /* Nível 2: Grupo de Mês */
     .month-group {
-      background: #1e293b; border-radius: 14px; margin-bottom: 14px;
+      background: #1e293b; border-radius: 12px; margin-bottom: 10px;
       border: 1px solid rgba(255,255,255,0.08); overflow: hidden;
     }
+    .month-group:last-child { margin-bottom: 0; }
     .month-header {
-      background: rgba(255,255,255,0.04); padding: 12px 14px;
+      background: rgba(255,255,255,0.03); padding: 12px 14px;
       display: flex; justify-content: space-between; align-items: center;
       cursor: pointer; user-select: none; transition: background 0.15s;
     }
-    .month-header:active { background: rgba(255,255,255,0.08); }
-    .month-left {
-      display: flex; align-items: center; gap: 8px;
-    }
+    .month-header:active { background: rgba(255,255,255,0.06); }
+    .month-left { display: flex; align-items: center; gap: 8px; }
     .month-chevron {
       font-size: 11px; color: #94a3b8; transition: transform 0.2s ease;
       display: inline-block;
     }
-    .month-group.open .month-chevron {
-      transform: rotate(180deg);
-      color: #38bdf8;
-    }
-    .month-label {
-      font-weight: 700; font-size: 14px; color: #f8fafc;
-    }
-    .month-qty {
-      font-size: 11px; color: #94a3b8; font-weight: 600;
-      margin-top: 2px;
-    }
-    .month-right {
-      text-align: right;
-    }
-    .month-total-val {
-      font-weight: 700; font-size: 14px;
-    }
-    .month-total-vol {
-      font-size: 11px; color: #94a3b8; font-weight: 600;
-      margin-top: 2px;
-    }
-    .month-content {
-      display: none; border-top: 1px solid rgba(255,255,255,0.06);
-    }
-    .month-group.open .month-content {
-      display: block;
-    }
+    .month-group.open .month-chevron { transform: rotate(180deg); color: #38bdf8; }
+    .month-label { font-weight: 700; font-size: 13px; color: #f8fafc; }
+    .month-qty { font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 1px; }
+    .month-right { text-align: right; }
+    .month-total-val { font-weight: 700; font-size: 13px; }
+    .month-total-vol { font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 1px; }
+    .month-content { display: none; border-top: 1px solid rgba(255,255,255,0.06); }
+    .month-group.open .month-content { display: block; }
 
+    /* Nível 3: Detalhe do Registro */
     .history-card {
       border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 14px;
       transition: background 0.15s;
     }
     .history-card:last-child { border-bottom: none; }
-    
     .history-top {
       display: flex; justify-content: space-between; align-items: flex-start;
       cursor: pointer;
@@ -218,9 +225,7 @@
       margin-top: 10px; border-radius: 10px; overflow: hidden;
       border: 1px solid rgba(255,255,255,0.12); position: relative;
     }
-    .map-container iframe {
-      width: 100%; height: 140px; border: none; display: block;
-    }
+    .map-container iframe { width: 100%; height: 140px; border: none; display: block; }
     .map-footer {
       background: #0f172a; padding: 6px 10px; font-size: 11px;
       display: flex; justify-content: space-between; align-items: center;
@@ -250,14 +255,14 @@
       <div id="lista-consulta-gas" style="margin-top:14px;"></div>
     </section>
 
-    <!-- 3. CONSULTA RECARGAS -->
+    <!-- 3. CONSULTA RECARGAS (TODAS) -->
     <section id="screen-consultar-elec" class="screen">
       <label>Veículo:</label>
       <select id="filtro-veiculo-elec" onchange="renderizarConsultaEnergia(false)"></select>
       <div id="lista-consulta-elec" style="margin-top:14px;"></div>
     </section>
 
-    <!-- 4. CONSULTA ACADEMIA -->
+    <!-- 4. CONSULTA ACADEMIA (APENAS ACADEMIA = TRUE) -->
     <section id="screen-consultar-acad" class="screen">
       <label>Veículo:</label>
       <select id="filtro-veiculo-acad" onchange="renderizarConsultaEnergia(true)"></select>
@@ -326,7 +331,7 @@
         <input type="text" id="elec-local">
         <button type="button" class="btn-gps" onclick="pegarLocal('elec-local')">📍 Obter GPS</button>
         <label style="display:flex; align-items:center; gap:8px; margin-top:14px; cursor:pointer;">
-          <input type="checkbox" id="elec-academia" style="width:auto; margin:0;"> Academia?
+          <input type="checkbox" id="elec-academia" style="width:auto; margin:0;"> Feito na Academia
         </label>
         <button type="submit" class="btn-submit" id="btn-submit-elec">Salvar na Planilha</button>
         <button type="button" class="btn-delete" id="btn-del-elec" onclick="confirmarExclusao('energia')">🗑️ Excluir este Registro</button>
@@ -391,8 +396,8 @@
       document.getElementById('fab-menu').classList.toggle('active', open);
     }
 
-    function toggleMonthGroup(headerElem) {
-      const group = headerElem.closest('.month-group');
+    function toggleGroup(headerElem, groupClass) {
+      const group = headerElem.closest('.' + groupClass);
       if (group) {
         group.classList.toggle('open');
       }
@@ -426,6 +431,10 @@
       return isNaN(n) ? 0 : n;
     }
 
+    function normalizarPlaca(str) {
+      return String(str || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    }
+
     function calcularPrecoLitro() {
       const litros = normalizarInput(document.getElementById('gas-litros').value);
       const valor = normalizarInput(document.getElementById('gas-valor').value);
@@ -439,17 +448,17 @@
       }
     }
 
-    function extrairMesAno(dataStr) {
-      if (!dataStr) return "Outros";
-      const p = String(dataStr).split(' ')[0].split('/');
-      return p.length === 3 ? `${p[1]}/${p[2]}` : "Outros";
-    }
-
-    function ordenarMesesDesc(a, b) {
-      const [mA, yA] = a.split('/').map(Number);
-      const [mB, yB] = b.split('/').map(Number);
-      if (yA !== yB) return yB - yA;
-      return mB - mA;
+    function extrairAnoEMes(dataStr) {
+      if (!dataStr) return { ano: "Outros", mes: "Outros" };
+      const clean = String(dataStr).split(' ')[0].trim();
+      const p = clean.split('/');
+      if (p.length === 3) {
+        return {
+          ano: p[2],
+          mes: p[1].padStart(2, '0')
+        };
+      }
+      return { ano: "Outros", mes: "Outros" };
     }
 
     function parseTimestamp(dataHoraStr, dataStr) {
@@ -665,8 +674,9 @@
       }
 
       DB.veiculos.forEach(v => {
-        const gasDoCarro = (DB.abastecimentos || []).filter(a => a.placa === v.placa);
-        const elecDoCarro = (DB.recargas || []).filter(r => r.placa === v.placa);
+        const targetPlaca = normalizarPlaca(v.placa);
+        const gasDoCarro = (DB.abastecimentos || []).filter(a => normalizarPlaca(a.placa) === targetPlaca);
+        const elecDoCarro = (DB.recargas || []).filter(r => normalizarPlaca(r.placa) === targetPlaca);
 
         const totalGas = gasDoCarro.reduce((acc, a) => acc + (a.valor || 0), 0);
         const totalLitros = gasDoCarro.reduce((acc, a) => acc + (a.litros || 0), 0);
@@ -715,164 +725,256 @@
       });
     }
 
+    // Estruturação hierárquica por Ano -> Mês
+    function agruparPorAnoEMes(lista) {
+      const arvore = {};
+      lista.forEach(item => {
+        const { ano, mes } = extrairAnoEMes(item.data);
+        if (!arvore[ano]) arvore[ano] = {};
+        if (!arvore[ano][mes]) arvore[ano][mes] = [];
+        arvore[ano][mes].push(item);
+      });
+      return arvore;
+    }
+
+    function ordenarChavesDesc(keys) {
+      return keys.sort((a, b) => {
+        if (a === "Outros") return 1;
+        if (b === "Outros") return -1;
+        return Number(b) - Number(a);
+      });
+    }
+
+    // 2. CONSULTA COMBUSTÍVEL (Ano -> Mês -> Detalhes)
     function renderizarConsultaGasolina() {
-      const placa = document.getElementById('filtro-veiculo-gas').value;
+      const placa = normalizarPlaca(document.getElementById('filtro-veiculo-gas').value);
       const container = document.getElementById('lista-consulta-gas');
       container.innerHTML = '';
 
       const filtrados = (DB.abastecimentos || []).map((item, idx) => ({ ...item, _idx: idx }))
-                                                 .filter(a => a.placa === placa);
-      const meses = {};
-      filtrados.forEach(a => {
-        const m = extrairMesAno(a.data);
-        if (!meses[m]) meses[m] = [];
-        meses[m].push(a);
-      });
+                                                 .filter(a => !placa || normalizarPlaca(a.placa) === placa);
 
-      const mesesOrdenados = Object.keys(meses).sort(ordenarMesesDesc);
+      const arvore = agruparPorAnoEMes(filtrados);
+      const anos = ordenarChavesDesc(Object.keys(arvore));
 
-      if (mesesOrdenados.length === 0) {
+      if (anos.length === 0) {
         container.innerHTML = '<p style="color:#94a3b8; text-align:center; padding:20px;">Nenhum abastecimento encontrado.</p>';
         return;
       }
 
-      mesesOrdenados.forEach(mes => {
-        const itens = meses[mes].sort(ordenarItensDesc);
-        const qtd = itens.length;
-        const totalMesValor = itens.reduce((s, i) => s + (i.valor || 0), 0);
-        const totalMesLitros = itens.reduce((s, i) => s + (i.litros || 0), 0);
+      anos.forEach(ano => {
+        const mesesDoAno = arvore[ano];
+        const meses = ordenarChavesDesc(Object.keys(mesesDoAno));
 
-        let htmlItens = itens.map(i => {
-          const coords = parseLatLong(i.local);
-          const mapHtml = coords ? gerarIframeMapa(coords) : '';
-          const precoLitro = i.litros > 0 ? (i.valor / i.litros) : 0;
+        let totalAnoValor = 0;
+        let totalAnoLitros = 0;
+        let totalAnoQtd = 0;
+        let htmlMeses = '';
 
-          return `
-            <div class="history-card">
-              <div class="history-top" onclick="editarAbastecimento(${i._idx})">
-                <div>
-                  <strong style="color:#f8fafc;">${i.data}</strong> <span style="font-size:11px; color:#38bdf8;">✎ Editar</span><br>
-                  <small style="color:#94a3b8;">${i.tipoGasolina} | Km: ${formataDec(i.km, 0)} | ${formataDec(i.litros, 2)} L</small><br>
-                  <span style="font-size:11px; font-weight:700; color:#38bdf8;">${formataReal(precoLitro)} / L</span>
+        meses.forEach(mes => {
+          const itens = mesesDoAno[mes].sort(ordenarItensDesc);
+          const qtdMes = itens.length;
+          const totalMesValor = itens.reduce((s, i) => s + (i.valor || 0), 0);
+          const totalMesLitros = itens.reduce((s, i) => s + (i.litros || 0), 0);
+
+          totalAnoValor += totalMesValor;
+          totalAnoLitros += totalMesLitros;
+          totalAnoQtd += qtdMes;
+
+          const htmlItens = itens.map(i => {
+            const coords = parseLatLong(i.local);
+            const mapHtml = coords ? gerarIframeMapa(coords) : '';
+            const precoLitro = i.litros > 0 ? (i.valor / i.litros) : 0;
+
+            return `
+              <div class="history-card">
+                <div class="history-top" onclick="editarAbastecimento(${i._idx})">
+                  <div>
+                    <strong style="color:#f8fafc;">${i.data}</strong> <span style="font-size:11px; color:#38bdf8;">✎ Editar</span><br>
+                    <small style="color:#94a3b8;">${i.tipoGasolina} | Km: ${formataDec(i.km, 0)} | ${formataDec(i.litros, 2)} L</small><br>
+                    <span style="font-size:11px; font-weight:700; color:#38bdf8;">${formataReal(precoLitro)} / L</span>
+                  </div>
+                  <div style="font-weight:700; color:#38bdf8; font-size:15px;">${formataReal(i.valor)}</div>
                 </div>
-                <div style="font-weight:700; color:#38bdf8; font-size:15px;">${formataReal(i.valor)}</div>
+                ${mapHtml}
               </div>
-              ${mapHtml}
+            `;
+          }).join('');
+
+          const rotuloMesQtd = qtdMes === 1 ? '1 abast.' : `${qtdMes} abast.`;
+          const nomeMes = mes === "Outros" ? "Outros" : `Mês ${mes}`;
+
+          htmlMeses += `
+            <div class="month-group">
+              <div class="month-header" onclick="toggleGroup(this, 'month-group')">
+                <div class="month-left">
+                  <span class="month-chevron">▼</span>
+                  <div>
+                    <div class="month-label">${nomeMes}</div>
+                    <div class="month-qty">${rotuloMesQtd}</div>
+                  </div>
+                </div>
+                <div class="month-right">
+                  <div class="month-total-val" style="color:#38bdf8;">${formataReal(totalMesValor)}</div>
+                  <div class="month-total-vol">${formataDec(totalMesLitros, 2)} L</div>
+                </div>
+              </div>
+              <div class="month-content">
+                ${htmlItens}
+              </div>
             </div>
           `;
-        }).join('');
+        });
 
-        const rotuloQtd = qtd === 1 ? '1 abastecimento' : `${qtd} abastecimentos`;
+        const rotuloAnoQtd = totalAnoQtd === 1 ? '1 abast.' : `${totalAnoQtd} abast.`;
 
         container.innerHTML += `
-          <div class="month-group">
-            <div class="month-header" onclick="toggleMonthGroup(this)">
-              <div class="month-left">
-                <span class="month-chevron">▼</span>
+          <div class="year-group">
+            <div class="year-header" onclick="toggleGroup(this, 'year-group')">
+              <div class="year-left">
+                <span class="year-chevron">▼</span>
                 <div>
-                  <div class="month-label">Mês: ${mes}</div>
-                  <div class="month-qty">${rotuloQtd}</div>
+                  <div class="year-label">Ano: ${ano}</div>
+                  <div class="year-qty">${rotuloAnoQtd}</div>
                 </div>
               </div>
-              <div class="month-right">
-                <div class="month-total-val" style="color:#38bdf8;">${formataReal(totalMesValor)}</div>
-                <div class="month-total-vol">${formataDec(totalMesLitros, 2)} L</div>
+              <div class="year-right">
+                <div class="year-total-val" style="color:#38bdf8;">${formataReal(totalAnoValor)}</div>
+                <div class="year-total-vol">${formataDec(totalAnoLitros, 2)} L</div>
               </div>
             </div>
-            <div class="month-content">
-              ${htmlItens}
+            <div class="year-content">
+              ${htmlMeses}
             </div>
           </div>
         `;
       });
     }
 
+    // 3 e 4. CONSULTA ENERGIA / ACADEMIA (Ano -> Mês -> Detalhes)
     function renderizarConsultaEnergia(apenasAcademia) {
       const selectId = apenasAcademia ? 'filtro-veiculo-acad' : 'filtro-veiculo-elec';
       const containerId = apenasAcademia ? 'lista-consulta-acad' : 'lista-consulta-elec';
-      const placa = document.getElementById(selectId).value;
+      const placa = normalizarPlaca(document.getElementById(selectId).value);
       const container = document.getElementById(containerId);
       container.innerHTML = '';
 
       const filtrados = (DB.recargas || []).map((item, idx) => ({ ...item, _idx: idx }))
-                                           .filter(r => r.placa === placa && (apenasAcademia ? r.academia === true : r.academia !== true));
-      
-      const meses = {};
-      filtrados.forEach(r => {
-        const m = extrairMesAno(r.data);
-        if (!meses[m]) meses[m] = [];
-        meses[m].push(r);
-      });
+                                           .filter(r => (!placa || normalizarPlaca(r.placa) === placa) && (!apenasAcademia || r.academia === true));
 
-      const mesesOrdenados = Object.keys(meses).sort(ordenarMesesDesc);
+      const arvore = agruparPorAnoEMes(filtrados);
+      const anos = ordenarChavesDesc(Object.keys(arvore));
 
-      if (mesesOrdenados.length === 0) {
-        container.innerHTML = `<p style="color:#94a3b8; text-align:center; padding:20px;">Nenhuma recarga encontrada.</p>`;
+      if (anos.length === 0) {
+        container.innerHTML = `<p style="color:#94a3b8; text-align:center; padding:20px;">Nenhum registro encontrado.</p>`;
         return;
       }
 
-      if (apenasAcademia) {
-        mesesOrdenados.forEach(mes => {
-          const qtd = meses[mes].length;
-          const totalMes = qtd * 60;
-          container.innerHTML += `
-            <div class="month-group" style="padding: 14px 16px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <span style="font-weight: 700; font-size: 15px; color: #f8fafc;">Mês: ${mes}</span>
-                <span style="font-size: 16px; font-weight: 700; color: #4ade80;">${formataReal(totalMes)}</span>
-              </div>
-              <div style="font-size: 12px; color: #94a3b8;">
-                ${qtd} ${qtd === 1 ? 'ida' : 'idas'} no mês (R$ 60,00 cada)
-              </div>
-            </div>
-          `;
-        });
-        return;
-      }
+      anos.forEach(ano => {
+        const mesesDoAno = arvore[ano];
+        const meses = ordenarChavesDesc(Object.keys(mesesDoAno));
 
-      mesesOrdenados.forEach(mes => {
-        const itens = meses[mes].sort(ordenarItensDesc);
-        const qtd = itens.length;
-        const totalMesValor = itens.reduce((s, i) => s + (i.valor || 0), 0);
-        const totalMesKwa = itens.reduce((s, i) => s + (i.kwa || 0), 0);
+        let totalAnoValor = 0;
+        let totalAnoVol = 0;
+        let totalAnoQtd = 0;
+        let htmlMeses = '';
 
-        let htmlItens = itens.map(i => {
-          const coords = parseLatLong(i.local);
-          const mapHtml = coords ? gerarIframeMapa(coords) : '';
+        meses.forEach(mes => {
+          const itens = mesesDoAno[mes].sort(ordenarItensDesc);
+          const qtdMes = itens.length;
+          totalAnoQtd += qtdMes;
 
-          return `
-            <div class="history-card">
-              <div class="history-top" onclick="editarRecarga(${i._idx})">
-                <div>
-                  <strong style="color:#f8fafc;">${i.data}</strong> <span style="font-size:11px; color:#4ade80;">✎ Editar</span><br>
-                  <small style="color:#94a3b8;">${formataDec(i.percInicial, 1)}% ➔ ${formataDec(i.percFinal, 1)}% | ${formataDec(i.kwa, 2)} kWh</small>
+          const nomeMes = mes === "Outros" ? "Outros" : `Mês ${mes}`;
+
+          if (apenasAcademia) {
+            const totalMes = qtdMes * 60;
+            totalAnoValor += totalMes;
+
+            htmlMeses += `
+              <div class="month-group" style="padding: 12px 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                  <span style="font-weight: 700; font-size: 14px; color: #f8fafc;">${nomeMes}</span>
+                  <span style="font-size: 15px; font-weight: 700; color: #4ade80;">${formataReal(totalMes)}</span>
                 </div>
-                <div style="font-weight:700; color:#4ade80; font-size:15px;">${formataReal(i.valor)}</div>
+                <div style="font-size: 12px; color: #94a3b8;">
+                  ${qtdMes} ${qtdMes === 1 ? 'ida' : 'idas'} no mês (R$ 60,00 cada)
+                </div>
               </div>
-              ${mapHtml}
-            </div>
-          `;
-        }).join('');
+            `;
+          } else {
+            const totalMesValor = itens.reduce((s, i) => s + (i.valor || 0), 0);
+            const totalMesKwa = itens.reduce((s, i) => s + (i.kwa || 0), 0);
 
-        const rotuloQtd = qtd === 1 ? '1 recarga' : `${qtd} recargas`;
+            totalAnoValor += totalMesValor;
+            totalAnoVol += totalMesKwa;
+
+            const htmlItens = itens.map(i => {
+              const coords = parseLatLong(i.local);
+              const mapHtml = coords ? gerarIframeMapa(coords) : '';
+              const tagAcademia = i.academia ? `<span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">🏋️ Academia</span>` : '';
+
+              return `
+                <div class="history-card">
+                  <div class="history-top" onclick="editarRecarga(${i._idx})">
+                    <div>
+                      <strong style="color:#f8fafc;">${i.data}</strong>${tagAcademia} <span style="font-size:11px; color:#4ade80;">✎ Editar</span><br>
+                      <small style="color:#94a3b8;">${formataDec(i.percInicial, 1)}% ➔ ${formataDec(i.percFinal, 1)}% | ${formataDec(i.kwa, 2)} kWh</small>
+                    </div>
+                    <div style="font-weight:700; color:#4ade80; font-size:15px;">${formataReal(i.valor)}</div>
+                  </div>
+                  ${mapHtml}
+                </div>
+              `;
+            }).join('');
+
+            const rotuloMesQtd = qtdMes === 1 ? '1 recarga' : `${qtdMes} recargas`;
+
+            htmlMeses += `
+              <div class="month-group">
+                <div class="month-header" onclick="toggleGroup(this, 'month-group')">
+                  <div class="month-left">
+                    <span class="month-chevron">▼</span>
+                    <div>
+                      <div class="month-label">${nomeMes}</div>
+                      <div class="month-qty">${rotuloMesQtd}</div>
+                    </div>
+                  </div>
+                  <div class="month-right">
+                    <div class="month-total-val" style="color:#4ade80;">${formataReal(totalMesValor)}</div>
+                    <div class="month-total-vol">${formataDec(totalMesKwa, 2)} kWh</div>
+                  </div>
+                </div>
+                <div class="month-content">
+                  ${htmlItens}
+                </div>
+              </div>
+            `;
+          }
+        });
+
+        const rotuloAnoQtd = apenasAcademia
+          ? (totalAnoQtd === 1 ? '1 ida' : `${totalAnoQtd} idas`)
+          : (totalAnoQtd === 1 ? '1 recarga' : `${totalAnoQtd} recargas`);
+
+        const subtotalVolAno = apenasAcademia ? '' : `<div class="year-total-vol">${formataDec(totalAnoVol, 2)} kWh</div>`;
 
         container.innerHTML += `
-          <div class="month-group">
-            <div class="month-header" onclick="toggleMonthGroup(this)">
-              <div class="month-left">
-                <span class="month-chevron">▼</span>
+          <div class="year-group">
+            <div class="year-header" onclick="toggleGroup(this, 'year-group')">
+              <div class="year-left">
+                <span class="year-chevron">▼</span>
                 <div>
-                  <div class="month-label">Mês: ${mes}</div>
-                  <div class="month-qty">${rotuloQtd}</div>
+                  <div class="year-label">Ano: ${ano}</div>
+                  <div class="year-qty">${rotuloAnoQtd}</div>
                 </div>
               </div>
-              <div class="month-right">
-                <div class="month-total-val" style="color:#4ade80;">${formataReal(totalMesValor)}</div>
-                <div class="month-total-vol">${formataDec(totalMesKwa, 2)} kWh</div>
+              <div class="year-right">
+                <div class="year-total-val" style="color:#4ade80;">${formataReal(totalAnoValor)}</div>
+                ${subtotalVolAno}
               </div>
             </div>
-            <div class="month-content">
-              ${htmlItens}
+            <div class="year-content">
+              ${htmlMeses}
             </div>
           </div>
         `;
