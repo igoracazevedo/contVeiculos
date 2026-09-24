@@ -3,29 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <!-- Ícone para Android / Chrome / iOS embutido via Data URI -->
+  <title>Controle de Veículos</title>
+
+  <!-- Ícone PWA e Configurações Mobile -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230284c7'/><text x='50%' y='55%' dominant-baseline='central' text-anchor='middle' font-size='55'>🚗</text></svg>">
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230284c7'/><text x='50%' y='55%' dominant-baseline='central' text-anchor='middle' font-size='55'>🚗</text></svg>">
-
-  <!-- Configuração PWA / Tela Cheia Nativa no Android -->
   <meta name="theme-color" content="#0b1120">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="data:application/manifest+json,{
-    %22name%22:%20%22Controle%20de%20Ve%C3%ADculos%22,
-    %22short_name%22:%20%22Ve%C3%ADculos%22,
-    %22start_url%22:%20%22.%22,
-    %22display%22:%20%22standalone%22,
-    %22background_color%22:%20%22%230b1120%22,
-    %22theme_color%22:%20%22%230b1120%22,
-    %22icons%22:[{
-      %22src%22:%20%22data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230284c7'/><text x='50%' y='55%' dominant-baseline='central' text-anchor='middle' font-size='55'>🚗</text></svg>%22,
-      %22sizes%22:%20%22192x192 512x512%22,
-      %22type%22:%20%22image/svg+xml%22
-    }]
-  }">
-  <title>Controle de Veículos</title>
+
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     
@@ -34,7 +20,6 @@
       display: flex; flex-direction: column; min-height: 100vh;
     }
 
-    /* Cabeçalho Mobile Compacto */
     header {
       background: #0b1120; padding: 16px 20px;
       position: sticky; top: 0; z-index: 10;
@@ -44,9 +29,8 @@
     header h1 { font-size: 18px; margin: 0; font-weight: 700; color: #f8fafc; }
     .btn-reload { background: none; border: none; font-size: 18px; color: #38bdf8; cursor: pointer; }
 
-    /* Área de Conteúdo */
     .container {
-      flex: 1; padding: 16px; padding-bottom: 90px; /* espaço para o menu inferior */
+      flex: 1; padding: 16px; padding-bottom: 95px;
       max-width: 480px; width: 100%; margin: 0 auto;
     }
     .screen { display: none; }
@@ -57,7 +41,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Cards de Veículos */
+    /* Cards de Resumo */
     .car-card {
       position: relative; border-radius: 16px; margin-bottom: 16px;
       overflow: hidden; background-color: #1e293b;
@@ -76,12 +60,10 @@
     .car-card-header .badge {
       background: rgba(56, 189, 248, 0.15); color: #38bdf8;
       border: 1px solid rgba(56, 189, 248, 0.3); padding: 4px 8px;
-      border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+      border-radius: 6px; font-size: 11px; font-weight: 700;
     }
 
-    .metric-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-    }
+    .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .metric-box {
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -93,7 +75,7 @@
     }
     .metric-box strong { font-size: 15px; color: #f8fafc; font-weight: 600; }
 
-    /* Barra de Navegação Inferior (Thumb Friendly) */
+    /* Barra de Navegação Inferior */
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0;
       background: #0f172a; border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -109,7 +91,7 @@
     .nav-btn .icon { font-size: 20px; line-height: 1; }
     .nav-btn.active { color: #38bdf8; }
 
-    /* Botão Flutuante Central de Ação (+) */
+    /* Botão Flutuante + */
     .action-fab {
       background: #0284c7; color: white; border: none;
       width: 46px; height: 46px; border-radius: 50%;
@@ -118,7 +100,6 @@
       margin-top: -18px;
     }
 
-    /* Modal de Ações Rápidas */
     .fab-menu {
       position: fixed; inset: 0; background: rgba(0,0,0,0.7);
       backdrop-filter: blur(2px); z-index: 60; display: none;
@@ -140,10 +121,14 @@
       text-align: center; font-size: 14px; cursor: pointer;
     }
 
-    /* Formulários Mobile */
+    /* Formulários */
     .form-box {
       background: #1e293b; border-radius: 16px; padding: 18px;
       border: 1px solid rgba(255,255,255,0.1);
+    }
+    .form-banner-edit {
+      display: none; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #38bdf8; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; margin-bottom: 12px;
     }
     label { display: block; margin-top: 12px; font-size: 12px; font-weight: 600; color: #94a3b8; }
     input, select {
@@ -151,9 +136,20 @@
       border-radius: 10px; font-size: 15px; background: #0f172a; color: #fff;
     }
     input:focus, select:focus { outline: none; border-color: #38bdf8; }
+    
+    input.calculated-field {
+      background: rgba(56, 189, 248, 0.08); border-color: rgba(56, 189, 248, 0.3);
+      color: #38bdf8; font-weight: 700; cursor: not-allowed;
+    }
+
     .btn-submit {
       width: 100%; margin-top: 18px; padding: 14px; background: #0284c7; color: white;
       border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer;
+    }
+    .btn-delete {
+      width: 100%; margin-top: 10px; padding: 12px; background: rgba(239, 68, 68, 0.15);
+      color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px;
+      font-size: 14px; font-weight: 700; cursor: pointer; display: none;
     }
     .btn-gps {
       margin-top: 6px; padding: 8px 12px; font-size: 12px; background: rgba(255,255,255,0.08);
@@ -161,26 +157,80 @@
     }
     .status-msg { margin-top: 12px; font-size: 13px; text-align: center; font-weight: 600; }
 
-    /* Grupos de Mês / Listas */
+    /* Itens de Consulta Recolhíveis / Expansíveis */
     .month-group {
-      background: #1e293b; border-radius: 14px; margin-bottom: 12px;
+      background: #1e293b; border-radius: 14px; margin-bottom: 14px;
       border: 1px solid rgba(255,255,255,0.08); overflow: hidden;
     }
     .month-header {
-      background: rgba(255,255,255,0.03); padding: 12px 14px;
-      border-bottom: 1px solid rgba(255,255,255,0.06); display: flex;
-      justify-content: space-between; font-weight: 700; font-size: 13px;
+      background: rgba(255,255,255,0.04); padding: 12px 14px;
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; user-select: none; transition: background 0.15s;
     }
-    .history-item {
-      padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.05);
-      font-size: 13px; display: flex; justify-content: space-between; align-items: center;
+    .month-header:active { background: rgba(255,255,255,0.08); }
+    .month-left {
+      display: flex; align-items: center; gap: 8px;
     }
-    .history-item:last-child { border-bottom: none; }
+    .month-chevron {
+      font-size: 11px; color: #94a3b8; transition: transform 0.2s ease;
+      display: inline-block;
+    }
+    .month-group.open .month-chevron {
+      transform: rotate(180deg);
+      color: #38bdf8;
+    }
+    .month-label {
+      font-weight: 700; font-size: 14px; color: #f8fafc;
+    }
+    .month-qty {
+      font-size: 11px; color: #94a3b8; font-weight: 600;
+      margin-top: 2px;
+    }
+    .month-right {
+      text-align: right;
+    }
+    .month-total-val {
+      font-weight: 700; font-size: 14px;
+    }
+    .month-total-vol {
+      font-size: 11px; color: #94a3b8; font-weight: 600;
+      margin-top: 2px;
+    }
+    .month-content {
+      display: none; border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .month-group.open .month-content {
+      display: block;
+    }
+
+    .history-card {
+      border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 14px;
+      transition: background 0.15s;
+    }
+    .history-card:last-child { border-bottom: none; }
+    
+    .history-top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      cursor: pointer;
+    }
+
+    .map-container {
+      margin-top: 10px; border-radius: 10px; overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.12); position: relative;
+    }
+    .map-container iframe {
+      width: 100%; height: 140px; border: none; display: block;
+    }
+    .map-footer {
+      background: #0f172a; padding: 6px 10px; font-size: 11px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .map-footer a { color: #38bdf8; text-decoration: none; font-weight: 600; }
   </style>
 </head>
 <body>
 
-  <!-- Cabeçalho -->
   <header>
     <h1 id="screen-title">Resumo Geral</h1>
     <button class="btn-reload" onclick="carregarDados()">↻</button>
@@ -214,36 +264,52 @@
       <div id="lista-consulta-acad" style="margin-top:14px;"></div>
     </section>
 
-    <!-- 5. FORMULÁRIO ABASTECER -->
+    <!-- 5. ABASTECIMENTO (CADASTRO / EDIÇÃO) -->
     <section id="screen-gasolina" class="screen">
       <form class="form-box" onsubmit="salvar(event, 'gasolina')">
+        <div class="form-banner-edit" id="banner-edit-gas">✏️ Editando registro selecionado</div>
+        <input type="hidden" id="gas-original-datahora">
+
         <label>Data e Hora</label>
         <input type="datetime-local" id="gas-datahora" required>
+        
         <label>Veículo</label>
         <select id="gas-placa" required></select>
+
         <label>KM Atual</label>
         <input type="text" inputmode="numeric" id="gas-km" placeholder="Ex: 8352" required>
+
         <label>Litros</label>
-        <input type="text" inputmode="decimal" id="gas-litros" placeholder="Ex: 35,00" required>
+        <input type="text" inputmode="decimal" id="gas-litros" placeholder="Ex: 35,00" oninput="calcularPrecoLitro()" required>
+
         <label>Valor Total (R$)</label>
-        <input type="text" inputmode="decimal" id="gas-valor" placeholder="Ex: 245,95" required>
+        <input type="text" inputmode="decimal" id="gas-valor" placeholder="Ex: 245,95" oninput="calcularPrecoLitro()" required>
+
+        <label>Preço por Litro (Calculado)</label>
+        <input type="text" id="gas-preco-litro" class="calculated-field" value="R$ 0,00 / L" readonly>
+
         <label>Tipo de Gasolina</label>
-        <select id="gas-tipo">
-          <option value="NORMAL">NORMAL</option>
+        <select id="gas-tipo" required>
+          <option value="COMUM">COMUM</option>
           <option value="ADITIVADA">ADITIVADA</option>
           <option value="PODIUM">PODIUM</option>
         </select>
+
         <label>Local GPS</label>
         <input type="text" id="gas-local">
         <button type="button" class="btn-gps" onclick="pegarLocal('gas-local')">📍 Obter GPS</button>
-        <button type="submit" class="btn-submit">Salvar na Planilha</button>
+        <button type="submit" class="btn-submit" id="btn-submit-gas">Salvar na Planilha</button>
+        <button type="button" class="btn-delete" id="btn-del-gas" onclick="confirmarExclusao('gasolina')">🗑️ Excluir este Registro</button>
         <div class="status-msg" id="msg-gasolina"></div>
       </form>
     </section>
 
-    <!-- 6. FORMULÁRIO RECARREGAR -->
+    <!-- 6. RECARGA (CADASTRO / EDIÇÃO) -->
     <section id="screen-energia" class="screen">
       <form class="form-box" onsubmit="salvar(event, 'energia')">
+        <div class="form-banner-edit" id="banner-edit-elec">✏️ Editando registro selecionado</div>
+        <input type="hidden" id="elec-original-datahora">
+
         <label>Data e Hora</label>
         <input type="datetime-local" id="elec-datahora" required>
         <label>Veículo</label>
@@ -262,12 +328,13 @@
         <label style="display:flex; align-items:center; gap:8px; margin-top:14px; cursor:pointer;">
           <input type="checkbox" id="elec-academia" style="width:auto; margin:0;"> Academia?
         </label>
-        <button type="submit" class="btn-submit">Salvar na Planilha</button>
+        <button type="submit" class="btn-submit" id="btn-submit-elec">Salvar na Planilha</button>
+        <button type="button" class="btn-delete" id="btn-del-elec" onclick="confirmarExclusao('energia')">🗑️ Excluir este Registro</button>
         <div class="status-msg" id="msg-energia"></div>
       </form>
     </section>
 
-    <!-- 7. FORMULÁRIO NOVO CARRO -->
+    <!-- 7. NOVO CARRO -->
     <section id="screen-veiculo" class="screen">
       <form class="form-box" onsubmit="salvar(event, 'veiculo')">
         <label>Placa</label>
@@ -282,17 +349,17 @@
     </section>
   </main>
 
-  <!-- Menu de Ações Rápidas (Abre no botão +) -->
+  <!-- Modal Flutuante (+) -->
   <div class="fab-menu" id="fab-menu" onclick="toggleFab(false)">
     <div class="fab-sheet" onclick="event.stopPropagation()">
-      <button class="fab-item" onclick="navigateFromFab('gasolina', 'Novo Abastecimento')">⛽ Novo Abastecimento</button>
-      <button class="fab-item" onclick="navigateFromFab('energia', 'Nova Recarga')">🔋 Nova Recarga</button>
-      <button class="fab-item" onclick="navigateFromFab('veiculo', 'Cadastrar Veículo')">🚗 Cadastrar Carro</button>
+      <button class="fab-item" onclick="abrirNovoForm('gasolina')">⛽ Novo Abastecimento</button>
+      <button class="fab-item" onclick="abrirNovoForm('energia')">🔋 Nova Recarga</button>
+      <button class="fab-item" onclick="navigate('veiculo', 'Cadastrar Carro', null); toggleFab(false);">🚗 Cadastrar Carro</button>
       <button class="fab-cancel" onclick="toggleFab(false)">Cancelar</button>
     </div>
   </div>
 
-  <!-- Bottom Navigation Fixa -->
+  <!-- Bottom Navigation -->
   <nav class="bottom-nav">
     <button class="nav-btn active" id="btn-nav-resumo" onclick="navigate('resumo', 'Resumo Geral', this)">
       <span class="icon">🏠</span>
@@ -324,9 +391,11 @@
       document.getElementById('fab-menu').classList.toggle('active', open);
     }
 
-    function navigateFromFab(screenId, title) {
-      toggleFab(false);
-      navigate(screenId, title, null);
+    function toggleMonthGroup(headerElem) {
+      const group = headerElem.closest('.month-group');
+      if (group) {
+        group.classList.toggle('open');
+      }
     }
 
     function navigate(screenId, title, elem) {
@@ -335,10 +404,7 @@
       
       document.getElementById('screen-' + screenId).classList.add('active');
       document.getElementById('screen-title').innerText = title;
-      
-      if (elem) {
-        elem.classList.add('active');
-      }
+      if (elem) elem.classList.add('active');
 
       if (screenId === 'consultar-gas') renderizarConsultaGasolina();
       if (screenId === 'consultar-elec') renderizarConsultaEnergia(false);
@@ -354,8 +420,23 @@
     }
 
     function normalizarInput(val) {
-      if (!val) return 0;
-      return String(val).trim().replace(/\./g, "").replace(",", ".");
+      if (val === null || val === undefined || val === "") return 0;
+      let s = String(val).trim().replace(/\./g, "").replace(",", ".");
+      let n = parseFloat(s);
+      return isNaN(n) ? 0 : n;
+    }
+
+    function calcularPrecoLitro() {
+      const litros = normalizarInput(document.getElementById('gas-litros').value);
+      const valor = normalizarInput(document.getElementById('gas-valor').value);
+      const output = document.getElementById('gas-preco-litro');
+
+      if (litros > 0 && valor > 0) {
+        const precoPorLitro = valor / litros;
+        output.value = `${formataReal(precoPorLitro)} / L`;
+      } else {
+        output.value = "R$ 0,00 / L";
+      }
     }
 
     function extrairMesAno(dataStr) {
@@ -371,14 +452,163 @@
       return mB - mA;
     }
 
+    function parseTimestamp(dataHoraStr, dataStr) {
+      const alvo = dataHoraStr || dataStr || "";
+      if (!alvo) return 0;
+      const [dataPart, horaPart] = alvo.split(' ');
+      const pData = dataPart.split('/');
+      if (pData.length !== 3) return 0;
+
+      const dia = parseInt(pData[0], 10);
+      const mes = parseInt(pData[1], 10) - 1;
+      const ano = parseInt(pData[2], 10);
+
+      let h = 0, m = 0, s = 0;
+      if (horaPart) {
+        const pHora = horaPart.split(':');
+        h = parseInt(pHora[0] || 0, 10);
+        m = parseInt(pHora[1] || 0, 10);
+        s = parseInt(pHora[2] || 0, 10);
+      }
+
+      return new Date(ano, mes, dia, h, m, s).getTime();
+    }
+
+    function ordenarItensDesc(a, b) {
+      const timeA = parseTimestamp(a.dataHora, a.data);
+      const timeB = parseTimestamp(b.dataHora, b.data);
+      return timeB - timeA;
+    }
+
+    function parseLatLong(str) {
+      if (!str) return null;
+      const parts = str.split(',').map(s => parseFloat(s.trim()));
+      if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+        return [parts[0], parts[1]];
+      }
+      return null;
+    }
+
+    function gerarIframeMapa(coords) {
+      const lat = coords[0];
+      const lon = coords[1];
+      const delta = 0.0035;
+      const bbox = `${lon - delta},${lat - delta},${lon + delta},${lat + delta}`;
+      const embedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lon}`;
+      const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+
+      return `
+        <div class="map-container" onclick="event.stopPropagation()">
+          <iframe src="${embedUrl}" loading="lazy"></iframe>
+          <div class="map-footer">
+            <span style="color:#94a3b8;">📍 ${lat.toFixed(4)}, ${lon.toFixed(4)}</span>
+            <a href="${gmapsUrl}" target="_blank">Abrir no Google Maps ↗</a>
+          </div>
+        </div>
+      `;
+    }
+
+    function abrirNovoForm(tipo) {
+      toggleFab(false);
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      const dtISO = now.toISOString().slice(0, 16);
+
+      if (tipo === 'gasolina') {
+        document.getElementById('banner-edit-gas').style.display = 'none';
+        document.getElementById('btn-del-gas').style.display = 'none';
+        document.getElementById('gas-original-datahora').value = '';
+        document.getElementById('btn-submit-gas').innerText = 'Salvar na Planilha';
+        document.getElementById('gas-datahora').value = dtISO;
+        document.getElementById('gas-km').value = '';
+        document.getElementById('gas-litros').value = '';
+        document.getElementById('gas-valor').value = '';
+        document.getElementById('gas-preco-litro').value = 'R$ 0,00 / L';
+        document.getElementById('gas-tipo').value = 'COMUM';
+        document.getElementById('gas-local').value = '';
+        navigate('gasolina', 'Novo Abastecimento', null);
+      } else if (tipo === 'energia') {
+        document.getElementById('banner-edit-elec').style.display = 'none';
+        document.getElementById('btn-del-elec').style.display = 'none';
+        document.getElementById('elec-original-datahora').value = '';
+        document.getElementById('btn-submit-elec').innerText = 'Salvar na Planilha';
+        document.getElementById('elec-datahora').value = dtISO;
+        document.getElementById('elec-pi').value = '';
+        document.getElementById('elec-pf').value = '';
+        document.getElementById('elec-kwa').value = '';
+        document.getElementById('elec-valor').value = '';
+        document.getElementById('elec-local').value = '';
+        document.getElementById('elec-academia').checked = false;
+        navigate('energia', 'Nova Recarga', null);
+      }
+    }
+
+    function editarAbastecimento(idx) {
+      const item = DB.abastecimentos[idx];
+      if (!item) return;
+
+      document.getElementById('banner-edit-gas').style.display = 'block';
+      document.getElementById('btn-del-gas').style.display = 'block';
+      document.getElementById('gas-original-datahora').value = item.dataHora;
+      document.getElementById('btn-submit-gas').innerText = 'Atualizar Registro';
+
+      document.getElementById('gas-placa').value = item.placa;
+      document.getElementById('gas-km').value = item.km;
+      document.getElementById('gas-litros').value = formataDec(item.litros, 2);
+      document.getElementById('gas-valor').value = formataDec(item.valor, 2);
+      
+      calcularPrecoLitro();
+      
+      let tipoNormalizado = String(item.tipoGasolina || "COMUM").trim().toUpperCase();
+      if (tipoNormalizado === "NORMAL") tipoNormalizado = "COMUM";
+      document.getElementById('gas-tipo').value = tipoNormalizado;
+
+      document.getElementById('gas-local').value = item.local || '';
+
+      if (item.dataHora && item.dataHora.includes('/')) {
+        const [d, t] = item.dataHora.split(' ');
+        const [day, mon, year] = d.split('/');
+        const timePart = t ? t.slice(0, 5) : "12:00";
+        document.getElementById('gas-datahora').value = `${year}-${mon.padStart(2,'0')}-${day.padStart(2,'0')}T${timePart}`;
+      }
+
+      navigate('gasolina', 'Editar Abastecimento', null);
+    }
+
+    function editarRecarga(idx) {
+      const item = DB.recargas[idx];
+      if (!item) return;
+
+      document.getElementById('banner-edit-elec').style.display = 'block';
+      document.getElementById('btn-del-elec').style.display = 'block';
+      document.getElementById('elec-original-datahora').value = item.dataHora;
+      document.getElementById('btn-submit-elec').innerText = 'Atualizar Registro';
+
+      document.getElementById('elec-placa').value = item.placa;
+      document.getElementById('elec-pi').value = formataDec(item.percInicial, 1);
+      document.getElementById('elec-pf').value = formataDec(item.percFinal, 1);
+      document.getElementById('elec-kwa').value = formataDec(item.kwa, 2);
+      document.getElementById('elec-valor').value = formataDec(item.valor, 2);
+      document.getElementById('elec-local').value = item.local || '';
+      document.getElementById('elec-academia').checked = (item.academia === true);
+
+      if (item.dataHora && item.dataHora.includes('/')) {
+        const [d, t] = item.dataHora.split(' ');
+        const [day, mon, year] = d.split('/');
+        const timePart = t ? t.slice(0, 5) : "12:00";
+        document.getElementById('elec-datahora').value = `${year}-${mon.padStart(2,'0')}-${day.padStart(2,'0')}T${timePart}`;
+      }
+
+      navigate('energia', 'Editar Recarga', null);
+    }
+
     window.processarDadosPlanilha = function(res) {
       const loading = document.getElementById('resumo-loading');
       if (!res || res.status !== "success") {
-        loading.innerText = "Erro retornado: " + (res ? res.message : "Sem dados.");
+        loading.innerText = "Erro: " + (res ? res.message : "Sem dados.");
         loading.style.color = "#ef4444";
         return;
       }
-
       try {
         DB = res;
         renderizarResumo();
@@ -389,19 +619,10 @@
       }
     };
 
-    async function carregarDados() {
+    function carregarDados() {
       const loading = document.getElementById('resumo-loading');
       loading.style.display = 'block';
       loading.innerText = "Sincronizando com a planilha...";
-
-      try {
-        const response = await fetch(API_URL, { redirect: "follow" });
-        if (response.ok) {
-          const res = await response.json();
-          window.processarDadosPlanilha(res);
-          return;
-        }
-      } catch (err) {}
 
       const antigo = document.getElementById('jsonp-script');
       if (antigo) antigo.remove();
@@ -425,7 +646,6 @@
         document.getElementById('filtro-veiculo-elec'),
         document.getElementById('filtro-veiculo-acad')
       ];
-
       dropdowns.forEach(el => { if (el) el.innerHTML = ''; });
 
       (DB.veiculos || []).forEach(v => {
@@ -500,7 +720,8 @@
       const container = document.getElementById('lista-consulta-gas');
       container.innerHTML = '';
 
-      const filtrados = (DB.abastecimentos || []).filter(a => a.placa === placa);
+      const filtrados = (DB.abastecimentos || []).map((item, idx) => ({ ...item, _idx: idx }))
+                                                 .filter(a => a.placa === placa);
       const meses = {};
       filtrados.forEach(a => {
         const m = extrairMesAno(a.data);
@@ -516,27 +737,51 @@
       }
 
       mesesOrdenados.forEach(mes => {
-        const itens = meses[mes];
+        const itens = meses[mes].sort(ordenarItensDesc);
+        const qtd = itens.length;
         const totalMesValor = itens.reduce((s, i) => s + (i.valor || 0), 0);
         const totalMesLitros = itens.reduce((s, i) => s + (i.litros || 0), 0);
 
-        let htmlItens = itens.map(i => `
-          <div class="history-item">
-            <div>
-              <strong style="color:#f8fafc;">${i.data}</strong> <span style="font-size:11px; color:#94a3b8;">(${i.tipoGasolina})</span><br>
-              <small style="color:#94a3b8;">Km: ${formataDec(i.km, 0)} | ${formataDec(i.litros, 2)} L</small>
+        let htmlItens = itens.map(i => {
+          const coords = parseLatLong(i.local);
+          const mapHtml = coords ? gerarIframeMapa(coords) : '';
+          const precoLitro = i.litros > 0 ? (i.valor / i.litros) : 0;
+
+          return `
+            <div class="history-card">
+              <div class="history-top" onclick="editarAbastecimento(${i._idx})">
+                <div>
+                  <strong style="color:#f8fafc;">${i.data}</strong> <span style="font-size:11px; color:#38bdf8;">✎ Editar</span><br>
+                  <small style="color:#94a3b8;">${i.tipoGasolina} | Km: ${formataDec(i.km, 0)} | ${formataDec(i.litros, 2)} L</small><br>
+                  <span style="font-size:11px; font-weight:700; color:#38bdf8;">${formataReal(precoLitro)} / L</span>
+                </div>
+                <div style="font-weight:700; color:#38bdf8; font-size:15px;">${formataReal(i.valor)}</div>
+              </div>
+              ${mapHtml}
             </div>
-            <div style="font-weight:700; color:#38bdf8;">${formataReal(i.valor)}</div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
+
+        const rotuloQtd = qtd === 1 ? '1 abastecimento' : `${qtd} abastecimentos`;
 
         container.innerHTML += `
           <div class="month-group">
-            <div class="month-header">
-              <span>Mês: ${mes}</span>
-              <span style="color:#38bdf8;">${formataReal(totalMesValor)} (${formataDec(totalMesLitros, 1)} L)</span>
+            <div class="month-header" onclick="toggleMonthGroup(this)">
+              <div class="month-left">
+                <span class="month-chevron">▼</span>
+                <div>
+                  <div class="month-label">Mês: ${mes}</div>
+                  <div class="month-qty">${rotuloQtd}</div>
+                </div>
+              </div>
+              <div class="month-right">
+                <div class="month-total-val" style="color:#38bdf8;">${formataReal(totalMesValor)}</div>
+                <div class="month-total-vol">${formataDec(totalMesLitros, 2)} L</div>
+              </div>
             </div>
-            ${htmlItens}
+            <div class="month-content">
+              ${htmlItens}
+            </div>
           </div>
         `;
       });
@@ -549,7 +794,8 @@
       const container = document.getElementById(containerId);
       container.innerHTML = '';
 
-      const filtrados = (DB.recargas || []).filter(r => r.placa === placa && (apenasAcademia ? r.academia === true : r.academia !== true));
+      const filtrados = (DB.recargas || []).map((item, idx) => ({ ...item, _idx: idx }))
+                                           .filter(r => r.placa === placa && (apenasAcademia ? r.academia === true : r.academia !== true));
       
       const meses = {};
       filtrados.forEach(r => {
@@ -565,12 +811,10 @@
         return;
       }
 
-      // Modo Academia: Contagem x R$ 60,00
       if (apenasAcademia) {
         mesesOrdenados.forEach(mes => {
           const qtd = meses[mes].length;
           const totalMes = qtd * 60;
-
           container.innerHTML += `
             <div class="month-group" style="padding: 14px 16px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
@@ -586,29 +830,50 @@
         return;
       }
 
-      // Modo Recargas Normais
       mesesOrdenados.forEach(mes => {
-        const itens = meses[mes];
+        const itens = meses[mes].sort(ordenarItensDesc);
+        const qtd = itens.length;
         const totalMesValor = itens.reduce((s, i) => s + (i.valor || 0), 0);
         const totalMesKwa = itens.reduce((s, i) => s + (i.kwa || 0), 0);
 
-        let htmlItens = itens.map(i => `
-          <div class="history-item">
-            <div>
-              <strong style="color:#f8fafc;">${i.data}</strong><br>
-              <small style="color:#94a3b8;">${formataDec(i.percInicial, 1)}% ➔ ${formataDec(i.percFinal, 1)}% | ${formataDec(i.kwa, 2)} kWh</small>
+        let htmlItens = itens.map(i => {
+          const coords = parseLatLong(i.local);
+          const mapHtml = coords ? gerarIframeMapa(coords) : '';
+
+          return `
+            <div class="history-card">
+              <div class="history-top" onclick="editarRecarga(${i._idx})">
+                <div>
+                  <strong style="color:#f8fafc;">${i.data}</strong> <span style="font-size:11px; color:#4ade80;">✎ Editar</span><br>
+                  <small style="color:#94a3b8;">${formataDec(i.percInicial, 1)}% ➔ ${formataDec(i.percFinal, 1)}% | ${formataDec(i.kwa, 2)} kWh</small>
+                </div>
+                <div style="font-weight:700; color:#4ade80; font-size:15px;">${formataReal(i.valor)}</div>
+              </div>
+              ${mapHtml}
             </div>
-            <div style="font-weight:700; color:#4ade80;">${formataReal(i.valor)}</div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
+
+        const rotuloQtd = qtd === 1 ? '1 recarga' : `${qtd} recargas`;
 
         container.innerHTML += `
           <div class="month-group">
-            <div class="month-header">
-              <span>Mês: ${mes}</span>
-              <span style="color:#4ade80;">${formataReal(totalMesValor)} (${formataDec(totalMesKwa, 1)} kWh)</span>
+            <div class="month-header" onclick="toggleMonthGroup(this)">
+              <div class="month-left">
+                <span class="month-chevron">▼</span>
+                <div>
+                  <div class="month-label">Mês: ${mes}</div>
+                  <div class="month-qty">${rotuloQtd}</div>
+                </div>
+              </div>
+              <div class="month-right">
+                <div class="month-total-val" style="color:#4ade80;">${formataReal(totalMesValor)}</div>
+                <div class="month-total-vol">${formataDec(totalMesKwa, 2)} kWh</div>
+              </div>
             </div>
-            ${htmlItens}
+            <div class="month-content">
+              ${htmlItens}
+            </div>
           </div>
         `;
       });
@@ -623,7 +888,11 @@
       }
     }
 
-    async function salvar(e, tipo) {
+    window.confirmarGravacao = function(res) {
+      if (window._salvandoCallback) window._salvandoCallback(res);
+    };
+
+    function salvar(e, tipo) {
       e.preventDefault();
       const btn = e.target.querySelector('button[type="submit"]');
       const msg = document.getElementById('msg-' + tipo);
@@ -632,7 +901,11 @@
       msg.innerText = "Gravando na planilha...";
 
       let payload = { tipo };
+
       if (tipo === 'gasolina') {
+        const origDt = document.getElementById('gas-original-datahora').value;
+        payload.isEdit = !!origDt;
+        payload.originalDataHora = origDt;
         payload.dataHora = document.getElementById('gas-datahora').value;
         payload.placa = document.getElementById('gas-placa').value;
         payload.km = normalizarInput(document.getElementById('gas-km').value);
@@ -641,6 +914,9 @@
         payload.tipoGasolina = document.getElementById('gas-tipo').value;
         payload.local = document.getElementById('gas-local').value;
       } else if (tipo === 'energia') {
+        const origDt = document.getElementById('elec-original-datahora').value;
+        payload.isEdit = !!origDt;
+        payload.originalDataHora = origDt;
         payload.dataHora = document.getElementById('elec-datahora').value;
         payload.placa = document.getElementById('elec-placa').value;
         payload.percInicial = normalizarInput(document.getElementById('elec-pi').value);
@@ -655,24 +931,82 @@
         payload.modelo = document.getElementById('veic-modelo').value;
       }
 
-      try {
-        await fetch(API_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+      const dataParam = encodeURIComponent(JSON.stringify(payload));
+      const scriptId = 'jsonp-salvar';
+      const antigo = document.getElementById(scriptId);
+      if (antigo) antigo.remove();
 
-        msg.style.color = "#4ade80";
-        msg.innerText = "✓ Salvo com sucesso!";
-        e.target.reset();
-        setTimeout(carregarDados, 1500);
-      } catch (err) {
-        msg.style.color = "#ef4444";
-        msg.innerText = "Erro ao conectar.";
-      } finally {
+      window._salvandoCallback = function(res) {
         btn.disabled = false;
-      }
+        if (res && res.status === 'success') {
+          msg.style.color = "#4ade80";
+          msg.innerText = payload.isEdit ? "✓ Atualizado com sucesso!" : "✓ Salvo com sucesso!";
+          setTimeout(() => {
+            msg.innerText = "";
+            carregarDados();
+            if (tipo === 'gasolina') navigate('consultar-gas', 'Combustível', document.getElementById('btn-nav-gas'));
+            if (tipo === 'energia') navigate('consultar-elec', 'Recargas', document.getElementById('btn-nav-elec'));
+            if (tipo === 'veiculo') navigate('resumo', 'Resumo Geral', document.getElementById('btn-nav-resumo'));
+          }, 1200);
+        } else {
+          msg.style.color = "#ef4444";
+          msg.innerText = "Erro ao salvar na planilha.";
+        }
+      };
+
+      const s = document.createElement('script');
+      s.id = scriptId;
+      const sep = API_URL.includes('?') ? '&' : '?';
+      s.src = `${API_URL}${sep}action=salvar&data=${dataParam}&callback=confirmarGravacao&_=${Date.now()}`;
+      s.onerror = function() {
+        btn.disabled = false;
+        msg.style.color = "#ef4444";
+        msg.innerText = "Erro ao conectar com a planilha.";
+      };
+      document.body.appendChild(s);
+    }
+
+    function confirmarExclusao(tipo) {
+      if (!confirm("Deseja realmente excluir este registro permanentemente da planilha?")) return;
+
+      const msg = document.getElementById('msg-' + tipo);
+      const origDt = tipo === 'gasolina' 
+        ? document.getElementById('gas-original-datahora').value 
+        : document.getElementById('elec-original-datahora').value;
+
+      if (!origDt) return;
+
+      msg.style.color = "#ef4444";
+      msg.innerText = "Excluindo registro...";
+
+      const payload = { tipo, originalDataHora: origDt };
+      const dataParam = encodeURIComponent(JSON.stringify(payload));
+      const scriptId = 'jsonp-excluir';
+      const antigo = document.getElementById(scriptId);
+      if (antigo) antigo.remove();
+
+      window._salvandoCallback = function(res) {
+        if (res && res.status === 'success') {
+          msg.innerText = "✓ Registro excluído!";
+          setTimeout(() => {
+            msg.innerText = "";
+            carregarDados();
+            if (tipo === 'gasolina') navigate('consultar-gas', 'Combustível', document.getElementById('btn-nav-gas'));
+            if (tipo === 'energia') navigate('consultar-elec', 'Recargas', document.getElementById('btn-nav-elec'));
+          }, 1200);
+        } else {
+          msg.innerText = "Erro ao excluir na planilha.";
+        }
+      };
+
+      const s = document.createElement('script');
+      s.id = scriptId;
+      const sep = API_URL.includes('?') ? '&' : '?';
+      s.src = `${API_URL}${sep}action=excluir&data=${dataParam}&callback=confirmarGravacao&_=${Date.now()}`;
+      s.onerror = function() {
+        msg.innerText = "Erro de conexão ao excluir.";
+      };
+      document.body.appendChild(s);
     }
 
     const now = new Date();
