@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Veículos</title>
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body {
+      margin: 0; padding: 0; background: #f1f5f9; color: #1e293b;
+      display: flex; height: 100vh; overflow: hidden;
+    }
+
+    /* Menu Lateral Fixo */
+    .sidebar {
+      width: 220px; min-width: 220px; background: #0f172a; color: #fff;
+      display: flex; flex-direction: column; height: 100%; border-right: 1px solid #1e293b;
+    }
+    .sidebar-header {
+      padding: 16px 14px; border-bottom: 1px solid #1e293b;
+    }
+    .sidebar-header h2 { margin: 0; font-size: 16px; color: #38bdf8; }
+    .sidebar-header small { color: #94a3b8; font-size: 11px; }
+    .sidebar-menu { list-style: none; margin: 8px 0 0; padding: 0; overflow-y: auto; flex: 1; }
+    .sidebar-item {
+      padding: 12px 14px; cursor: pointer; display: flex; align-items: center; gap: 8px;
+      font-size: 13px; border-left: 3px solid transparent; color: #cbd5e1;
+    }
+    .sidebar-item.active, .sidebar-item:active {
+      background: #1e293b; border-left-color: #38bdf8; color: #38bdf8; font-weight: 600;
+    }
+
+    /* Área Principal */
+    .main-wrapper {
+      flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden;
+    }
+    header {
+      background: #fff; color: #0f172a; padding: 14px 16px;
+      border-bottom: 1px solid #e2e8f0; display: flex; align-items: center;
+    }
+    header h1 { font-size: 16px; margin: 0; font-weight: 700; }
+
+    .container {
+      padding: 14px; overflow-y: auto; flex: 1; max-width: 600px; width: 100%;
+    }
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* Card de Resumo */
+    .car-card {
+      position: relative; border-radius: 14px; margin-bottom: 16px;
+      overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e2e8f0; background-color: #0f172a;
+      background-size: cover; background-position: center;
+    }
+    .car-card-overlay {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.88) 0%, rgba(15, 23, 42, 0.72) 100%);
+      padding: 16px; backdrop-filter: blur(1px);
+    }
+    .car-card-header {
+      display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;
+    }
+    .car-card-header h3 {
+      margin: 0; font-size: 16px; color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+    .car-card-header .badge {
+      background: rgba(56, 189, 248, 0.2); color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 8px;
+      border-radius: 6px; font-size: 11px; font-weight: bold;
+    }
+    .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .metric-box {
+      background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 8px; padding: 10px;
+    }
+    .metric-box small {
+      display: block; color: #94a3b8; font-size: 10px; margin-bottom: 2px;
+      text-transform: uppercase; font-weight: 600;
+    }
+    .metric-box strong { font-size: 15px; color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+
+    /* Formulários */
+    .form-box { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+    label { display: block; margin-top: 10px; font-size: 12px; font-weight: 600; color: #475569; }
+    input, select {
+      width: 100%; padding: 9px; margin-top: 4px; border: 1px solid #cbd5e1;
+      border-radius: 6px; font-size: 14px; background: #fff;
+    }
+    .btn-submit {
+      width: 100%; margin-top: 16px; padding: 12px; background: #0284c7; color: white;
+      border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer;
+    }
+    .btn-gps { margin-top: 4px; padding: 6px 10px; font-size: 11px; background: #e2e8f0; border: none; border-radius: 4px; }
+    .status-msg { margin-top: 10px; font-size: 12px; text-align: center; font-weight: bold; }
+
+    /* Listas das Consultas */
+    .month-group { background: #fff; border-radius: 10px; margin-bottom: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
+    .month-header { background: #f8fafc; padding: 10px 14px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; }
+    .history-item { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; font-size: 12px; display: flex; justify-content: space-between; }
+    .history-item:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Menu Lateral Fixo -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>Meus Veículos</h2>
+      <small>Controle de Gastos</small>
+    </div>
+    <ul class="sidebar-menu">
+      <li class="sidebar-item active" onclick="navigate('resumo', 'Resumo Geral', this)">🏠 Resumo</li>
+      <li class="sidebar-item" onclick="navigate('consultar-gas', 'Consulta de Combustível', this)">📊 Combustível</li>
+      <li class="sidebar-item" onclick="navigate('consultar-elec', 'Consulta de Recargas', this)">⚡ Recargas</li>
+      <li class="sidebar-item" onclick="navigate('consultar-acad', 'Recargas na Academia', this)">🏋️ Academia</li>
+      <li class="sidebar-item" onclick="navigate('gasolina', 'Novo Abastecimento', this)">⛽ Abastecer</li>
+      <li class="sidebar-item" onclick="navigate('energia', 'Nova Recarga', this)">🔋 Recarregar</li>
+      <li class="sidebar-item" onclick="navigate('veiculo', 'Cadastrar Veículo', this)">🚗 Novo Carro</li>
+    </ul>
+  </aside>
+
+  <!-- Área Principal -->
+  <div class="main-wrapper">
+    <header>
+      <h1 id="screen-title">Resumo Geral</h1>
+    </header>
+
+    <main class="container">
+      <!-- 1. RESUMO -->
+      <section id="screen-resumo" class="screen active">
+        <div id="resumo-loading" style="text-align:center; padding:20px; color:#64748b; font-size:13px;">Carregando dados da planilha...</div>
+        <div id="resumo-cards"></div>
+      </section>
+
+      <!-- 2. CONSULTA COMBUSTÍVEL -->
+      <section id="screen-consultar-gas" class="screen">
+        <label>Filtrar por Veículo:</label>
+        <select id="filtro-veiculo-gas" onchange="renderizarConsultaGasolina()"></select>
+        <div id="lista-consulta-gas" style="margin-top:12px;"></div>
+      </section>
+
+      <!-- 3. CONSULTA RECARGAS (EXTERNAS) -->
+      <section id="screen-consultar-elec" class="screen">
+        <label>Filtrar por Veículo:</label>
+        <select id="filtro-veiculo-elec" onchange="renderizarConsultaEnergia(false)"></select>
+        <div id="lista-consulta-elec" style="margin-top:12px;"></div>
+      </section>
+
+      <!-- 4. CONSULTA RECARGAS ACADEMIA -->
+      <section id="screen-consultar-acad" class="screen">
+        <label>Filtrar por Veículo:</label>
+        <select id="filtro-veiculo-acad" onchange="renderizarConsultaEnergia(true)"></select>
+        <div id="lista-consulta-acad" style="margin-top:12px;"></div>
+      </section>
+
+      <!-- 5. NOVO ABASTECIMENTO -->
+      <section id="screen-gasolina" class="screen">
+        <form class="form-box" onsubmit="salvar(event, 'gasolina')">
+          <label>Data e Hora</label>
+          <input type="datetime-local" id="gas-datahora" required>
+          <label>Veículo</label>
+          <select id="gas-placa" required></select>
+          <label>KM Atual</label>
+          <input type="text" inputmode="numeric" id="gas-km" placeholder="Ex: 8352" required>
+          <label>Litros</label>
+          <input type="text" inputmode="decimal" id="gas-litros" placeholder="Ex: 35,00" required>
+          <label>Valor (R$)</label>
+          <input type="text" inputmode="decimal" id="gas-valor" placeholder="Ex: 245,95" required>
+          <label>Tipo de Gasolina</label>
+          <select id="gas-tipo">
+            <option value="NORMAL">COMUM</option>
+            <option value="ADITIVADA">ADITIVADA</option>
+            <option value="PODIUM">PODIUM</option>
+          </select>
+          <label>Local GPS</label>
+          <input type="text" id="gas-local">
+          <button type="button" class="btn-gps" onclick="pegarLocal('gas-local')">📍 Obter GPS</button>
+          <button type="submit" class="btn-submit">Salvar na Planilha</button>
+          <div class="status-msg" id="msg-gasolina"></div>
+        </form>
+      </section>
+
+      <!-- 6. NOVA RECARGA -->
+      <section id="screen-energia" class="screen">
+        <form class="form-box" onsubmit="salvar(event, 'energia')">
+          <label>Data e Hora</label>
+          <input type="datetime-local" id="elec-datahora" required>
+          <label>Veículo</label>
+          <select id="elec-placa" required></select>
+          <label>% Inicial</label>
+          <input type="text" inputmode="decimal" id="elec-pi" placeholder="Ex: 25,0" required>
+          <label>% Final</label>
+          <input type="text" inputmode="decimal" id="elec-pf" placeholder="Ex: 68,0" required>
+          <label>Consumo (kWh)</label>
+          <input type="text" inputmode="decimal" id="elec-kwa" placeholder="Ex: 8,28" required>
+          <label>Valor (R$)</label>
+          <input type="text" inputmode="decimal" id="elec-valor" placeholder="Ex: 16,50" required>
+          <label>Local GPS</label>
+          <input type="text" id="elec-local">
+          <button type="button" class="btn-gps" onclick="pegarLocal('elec-local')">📍 Obter GPS</button>
+          <label style="display:flex; align-items:center; gap:8px; margin-top:12px; cursor:pointer;">
+            <input type="checkbox" id="elec-academia" style="width:auto; margin:0;"> Recarga na Academia
+          </label>
+          <button type="submit" class="btn-submit">Salvar na Planilha</button>
+          <div class="status-msg" id="msg-energia"></div>
+        </form>
+      </section>
+
+      <!-- 7. NOVO VEÍCULO -->
+      <section id="screen-veiculo" class="screen">
+        <form class="form-box" onsubmit="salvar(event, 'veiculo')">
+          <label>Placa</label>
+          <input type="text" id="veic-placa" placeholder="Ex: TID-5G50" required>
+          <label>Marca</label>
+          <input type="text" id="veic-marca" placeholder="Ex: BYD" required>
+          <label>Modelo</label>
+          <input type="text" id="veic-modelo" placeholder="Ex: SONG PRO GS" required>
+          <button type="submit" class="btn-submit">Adicionar Veículo</button>
+          <div class="status-msg" id="msg-veiculo"></div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbw2eaaPCNMQbCcC3mVJKnDtcmJx11itHGB1KVukEC-6X3NvVK4WmVfwk3rTfQt9ry25/exec";
+
+    let DB = { veiculos: [], abastecimentos: [], recargas: [] };
+
+    function navigate(screenId, title, elem) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+      document.getElementById('screen-' + screenId).classList.add('active');
+      document.getElementById('screen-title').innerText = title;
+      if (elem) elem.classList.add('active');
+
+      if (screenId === 'consultar-gas') renderizarConsultaGasolina();
+      if (screenId === 'consultar-elec') renderizarConsultaEnergia(false);
+      if (screenId === 'consultar-acad') renderizarConsultaEnergia(true);
+    }
+
+    function formataReal(v) {
+      return (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function formataDec(v, decimais = 2) {
+      return (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: decimais, maximumFractionDigits: decimais });
+    }
+
+    function normalizarInput(val) {
+      if (!val) return 0;
+      return String(val).trim().replace(/\./g, "").replace(",", ".");
+    }
+
+    function extrairMesAno(dataStr) {
+      if (!dataStr) return "Outros";
+      const p = String(dataStr).split(' ')[0].split('/');
+      return p.length === 3 ? `${p[1]}/${p[2]}` : "Outros";
+    }
+
+    function ordenarMesesDesc(a, b) {
+      const [mA, yA] = a.split('/').map(Number);
+      const [mB, yB] = b.split('/').map(Number);
+      if (yA !== yB) return yB - yA;
+      return mB - mA;
+    }
+
+    window.processarDadosPlanilha = function(res) {
+      const loading = document.getElementById('resumo-loading');
+      if (!res || res.status !== "success") {
+        loading.innerText = "Erro retornado: " + (res ? res.message : "Sem dados.");
+        loading.style.color = "#dc2626";
+        return;
+      }
+
+      try {
+        DB = res;
+        renderizarResumo();
+        popularDropdowns();
+      } catch (err) {
+        loading.innerText = "Erro ao processar: " + err.message;
+        loading.style.color = "#dc2626";
+      }
+    };
+
+    async function carregarDados() {
+      const loading = document.getElementById('resumo-loading');
+      loading.style.display = 'block';
+      loading.innerText = "Carregando dados da planilha...";
+
+      // Tentativa 1: Fetch direto com redirect
+      try {
+        const response = await fetch(API_URL, { redirect: "follow" });
+        if (response.ok) {
+          const res = await response.json();
+          window.processarDadosPlanilha(res);
+          return;
+        }
+      } catch (errFetch) {
+        // Fallback para JSONP caso fetch seja barrado
+      }
+
+      // Tentativa 2: Fallback via JSONP
+      const antigo = document.getElementById('jsonp-script');
+      if (antigo) antigo.remove();
+
+      const script = document.createElement('script');
+      script.id = 'jsonp-script';
+      const sep = API_URL.includes('?') ? '&' : '?';
+      script.src = `${API_URL}${sep}callback=processarDadosPlanilha&_=${Date.now()}`;
+      
+      script.onerror = function() {
+        loading.innerHTML = "Não foi possível carregar os dados.<br><br>Verifique se no Apps Script a implantação está ativa como <b>Qualquer pessoa</b> e com uma <b>Nova Versão</b> publicada.";
+        loading.style.color = "#dc2626";
+      };
+
+      document.body.appendChild(script);
+    }
+
+    function popularDropdowns() {
+      const dropdowns = [
+        document.getElementById('gas-placa'),
+        document.getElementById('elec-placa'),
+        document.getElementById('filtro-veiculo-gas'),
+        document.getElementById('filtro-veiculo-elec'),
+        document.getElementById('filtro-veiculo-acad')
+      ];
+
+      dropdowns.forEach(el => { if (el) el.innerHTML = ''; });
+
+      (DB.veiculos || []).forEach(v => {
+        const opt = `<option value="${v.placa}">${v.placa} - ${v.marca} ${v.modelo}</option>`;
+        dropdowns.forEach(el => { if (el) el.innerHTML += opt; });
+      });
+    }
+
+    function renderizarResumo() {
+      document.getElementById('resumo-loading').style.display = 'none';
+      const container = document.getElementById('resumo-cards');
+      container.innerHTML = '';
+
+      if (!DB.veiculos || DB.veiculos.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#64748b;">Nenhum veículo encontrado.</p>';
+        return;
+      }
+
+      DB.veiculos.forEach(v => {
+        const gasDoCarro = (DB.abastecimentos || []).filter(a => a.placa === v.placa);
+        const elecDoCarro = (DB.recargas || []).filter(r => r.placa === v.placa);
+
+        const totalGas = gasDoCarro.reduce((acc, a) => acc + (a.valor || 0), 0);
+        const totalLitros = gasDoCarro.reduce((acc, a) => acc + (a.litros || 0), 0);
+        const totalElec = elecDoCarro.reduce((acc, r) => acc + (r.valor || 0), 0);
+
+        let mediaKmL = "0,00";
+        if (gasDoCarro.length > 1 && totalLitros > 0) {
+          const kms = gasDoCarro.map(a => Number(a.km) || 0).filter(k => k > 0);
+          if (kms.length > 1) {
+            const minKm = Math.min(...kms);
+            const maxKm = Math.max(...kms);
+            mediaKmL = formataDec((maxKm - minKm) / totalLitros, 2);
+          }
+        }
+
+        const bgEstilo = v.foto ? `style="background-image: url('${v.foto}');"` : '';
+
+        container.innerHTML += `
+          <div class="car-card" ${bgEstilo}>
+            <div class="car-card-overlay">
+              <div class="car-card-header">
+                <h3>${v.marca} ${v.modelo}</h3>
+                <span class="badge">${v.placa}</span>
+              </div>
+              <div class="metric-grid">
+                <div class="metric-box">
+                  <small>Combustível</small>
+                  <strong>${formataReal(totalGas)}</strong>
+                </div>
+                <div class="metric-box">
+                  <small>Energia Total</small>
+                  <strong>${formataReal(totalElec)}</strong>
+                </div>
+                <div class="metric-box">
+                  <small>Gasto Total</small>
+                  <strong style="color:#38bdf8;">${formataReal(totalGas + totalElec)}</strong>
+                </div>
+                <div class="metric-box">
+                  <small>Média Combustível</small>
+                  <strong>${mediaKmL} km/l</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function renderizarConsultaGasolina() {
+      const placa = document.getElementById('filtro-veiculo-gas').value;
+      const container = document.getElementById('lista-consulta-gas');
+      container.innerHTML = '';
+
+      const filtrados = (DB.abastecimentos || []).filter(a => a.placa === placa);
+      const meses = {};
+      filtrados.forEach(a => {
+        const m = extrairMesAno(a.data);
+        if (!meses[m]) meses[m] = [];
+        meses[m].push(a);
+      });
+
+      const mesesOrdenados = Object.keys(meses).sort(ordenarMesesDesc);
+
+      if (mesesOrdenados.length === 0) {
+        container.innerHTML = '<p style="color:#64748b; text-align:center; padding:15px;">Nenhum abastecimento encontrado.</p>';
+        return;
+      }
+
+      mesesOrdenados.forEach(mes => {
+        const itens = meses[mes];
+        const totalMesValor = itens.reduce((s, i) => s + (i.valor || 0), 0);
+        const totalMesLitros = itens.reduce((s, i) => s + (i.litros || 0), 0);
+
+        let htmlItens = itens.map(i => `
+          <div class="history-item">
+            <div>
+              <strong>${i.data}</strong> - ${i.tipoGasolina}<br>
+              <small style="color:#64748b;">Km: ${formataDec(i.km, 0)} | ${formataDec(i.litros, 2)} L</small>
+            </div>
+            <div style="font-weight:bold; color:#0f172a;">${formataReal(i.valor)}</div>
+          </div>
+        `).join('');
+
+        container.innerHTML += `
+          <div class="month-group">
+            <div class="month-header">
+              <span>Mês: ${mes}</span>
+              <span style="color:#0284c7;">${formataReal(totalMesValor)} (${formataDec(totalMesLitros, 1)} L)</span>
+            </div>
+            ${htmlItens}
+          </div>
+        `;
+      });
+    }
+
+    function renderizarConsultaEnergia(apenasAcademia) {
+      const selectId = apenasAcademia ? 'filtro-veiculo-acad' : 'filtro-veiculo-elec';
+      const containerId = apenasAcademia ? 'lista-consulta-acad' : 'lista-consulta-elec';
+      const placa = document.getElementById(selectId).value;
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+
+      const filtrados = (DB.recargas || []).filter(r => r.placa === placa && (apenasAcademia ? r.academia === true : r.academia !== true));
+      
+      const meses = {};
+      filtrados.forEach(r => {
+        const m = extrairMesAno(r.data);
+        if (!meses[m]) meses[m] = [];
+        meses[m].push(r);
+      });
+
+      const mesesOrdenados = Object.keys(meses).sort(ordenarMesesDesc);
+
+      if (mesesOrdenados.length === 0) {
+        container.innerHTML = `<p style="color:#64748b; text-align:center; padding:15px;">Nenhum registro encontrado.</p>`;
+        return;
+      }
+
+      // Tela exclusiva da Academia: Contagem x R$ 60,00
+      if (apenasAcademia) {
+        mesesOrdenados.forEach(mes => {
+          const qtd = meses[mes].length;
+          const totalMes = qtd * 60;
+
+          container.innerHTML += `
+            <div class="month-group" style="padding: 14px 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span style="font-weight: bold; font-size: 15px; color: #0f172a;">Mês: ${mes}</span>
+                <span style="font-size: 16px; font-weight: bold; color: #16a34a;">${formataReal(totalMes)}</span>
+              </div>
+              <div style="font-size: 13px; color: #64748b;">
+                ${qtd} ${qtd === 1 ? 'ida' : 'idas'} no mês (R$ 60,00 cada)
+              </div>
+            </div>
+          `;
+        });
+        return;
+      }
+
+      // Recargas normais/externas
+      mesesOrdenados.forEach(mes => {
+        const itens = meses[mes];
+        const totalMesValor = itens.reduce((s, i) => s + (i.valor || 0), 0);
+        const totalMesKwa = itens.reduce((s, i) => s + (i.kwa || 0), 0);
+
+        let htmlItens = itens.map(i => `
+          <div class="history-item">
+            <div>
+              <strong>${i.data}</strong><br>
+              <small style="color:#64748b;">${formataDec(i.percInicial, 1)}% ➔ ${formataDec(i.percFinal, 1)}% | ${formataDec(i.kwa, 2)} kWh</small>
+            </div>
+            <div style="font-weight:bold; color:#0f172a;">${formataReal(i.valor)}</div>
+          </div>
+        `).join('');
+
+        container.innerHTML += `
+          <div class="month-group">
+            <div class="month-header">
+              <span>Mês: ${mes}</span>
+              <span style="color:#16a34a;">${formataReal(totalMesValor)} (${formataDec(totalMesKwa, 1)} kWh)</span>
+            </div>
+            ${htmlItens}
+          </div>
+        `;
+      });
+    }
+
+    function pegarLocal(inputId) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => document.getElementById(inputId).value = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`,
+          () => alert("Ative a localização no dispositivo.")
+        );
+      }
+    }
+
+    async function salvar(e, tipo) {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      const msg = document.getElementById('msg-' + tipo);
+      btn.disabled = true;
+      msg.style.color = "#0284c7";
+      msg.innerText = "Gravando na planilha...";
+
+      let payload = { tipo };
+      if (tipo === 'gasolina') {
+        payload.dataHora = document.getElementById('gas-datahora').value;
+        payload.placa = document.getElementById('gas-placa').value;
+        payload.km = normalizarInput(document.getElementById('gas-km').value);
+        payload.litros = normalizarInput(document.getElementById('gas-litros').value);
+        payload.valor = normalizarInput(document.getElementById('gas-valor').value);
+        payload.tipoGasolina = document.getElementById('gas-tipo').value;
+        payload.local = document.getElementById('gas-local').value;
+      } else if (tipo === 'energia') {
+        payload.dataHora = document.getElementById('elec-datahora').value;
+        payload.placa = document.getElementById('elec-placa').value;
+        payload.percInicial = normalizarInput(document.getElementById('elec-pi').value);
+        payload.percFinal = normalizarInput(document.getElementById('elec-pf').value);
+        payload.kwa = normalizarInput(document.getElementById('elec-kwa').value);
+        payload.valor = normalizarInput(document.getElementById('elec-valor').value);
+        payload.local = document.getElementById('elec-local').value;
+        payload.academia = document.getElementById('elec-academia').checked;
+      } else if (tipo === 'veiculo') {
+        payload.placa = document.getElementById('veic-placa').value;
+        payload.marca = document.getElementById('veic-marca').value;
+        payload.modelo = document.getElementById('veic-modelo').value;
+      }
+
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        msg.style.color = "#16a34a";
+        msg.innerText = "✓ Salvo com sucesso!";
+        e.target.reset();
+        setTimeout(carregarDados, 1500);
+      } catch (err) {
+        msg.style.color = "#dc2626";
+        msg.innerText = "Erro ao conectar.";
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // Inicialização da Data/Hora
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    const dtISO = now.toISOString().slice(0, 16);
+    const gasDt = document.getElementById('gas-datahora');
+    const elecDt = document.getElementById('elec-datahora');
+    if (gasDt) gasDt.value = dtISO;
+    if (elecDt) elecDt.value = dtISO;
+
+    carregarDados();
+  </script>
+</body>
+</html>
