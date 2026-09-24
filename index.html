@@ -2,237 +2,321 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Controle de Veículos</title>
   <style>
-    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    
     body {
-      margin: 0; padding: 0; background: #f1f5f9; color: #1e293b;
-      display: flex; height: 100vh; overflow: hidden;
+      margin: 0; padding: 0; background: #0b1120; color: #f1f5f9;
+      display: flex; flex-direction: column; min-height: 100vh;
     }
 
-    /* Menu Lateral Fixo */
-    .sidebar {
-      width: 220px; min-width: 220px; background: #0f172a; color: #fff;
-      display: flex; flex-direction: column; height: 100%; border-right: 1px solid #1e293b;
-    }
-    .sidebar-header {
-      padding: 16px 14px; border-bottom: 1px solid #1e293b;
-    }
-    .sidebar-header h2 { margin: 0; font-size: 16px; color: #38bdf8; }
-    .sidebar-header small { color: #94a3b8; font-size: 11px; }
-    .sidebar-menu { list-style: none; margin: 8px 0 0; padding: 0; overflow-y: auto; flex: 1; }
-    .sidebar-item {
-      padding: 12px 14px; cursor: pointer; display: flex; align-items: center; gap: 8px;
-      font-size: 13px; border-left: 3px solid transparent; color: #cbd5e1;
-    }
-    .sidebar-item.active, .sidebar-item:active {
-      background: #1e293b; border-left-color: #38bdf8; color: #38bdf8; font-weight: 600;
-    }
-
-    /* Área Principal */
-    .main-wrapper {
-      flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden;
-    }
+    /* Cabeçalho Mobile Compacto */
     header {
-      background: #fff; color: #0f172a; padding: 14px 16px;
-      border-bottom: 1px solid #e2e8f0; display: flex; align-items: center;
+      background: #0b1120; padding: 16px 20px;
+      position: sticky; top: 0; z-index: 10;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex; justify-content: space-between; align-items: center;
     }
-    header h1 { font-size: 16px; margin: 0; font-weight: 700; }
+    header h1 { font-size: 18px; margin: 0; font-weight: 700; color: #f8fafc; }
+    .btn-reload { background: none; border: none; font-size: 18px; color: #38bdf8; cursor: pointer; }
 
+    /* Área de Conteúdo */
     .container {
-      padding: 14px; overflow-y: auto; flex: 1; max-width: 600px; width: 100%;
+      flex: 1; padding: 16px; padding-bottom: 90px; /* espaço para o menu inferior */
+      max-width: 480px; width: 100%; margin: 0 auto;
     }
     .screen { display: none; }
-    .screen.active { display: block; }
+    .screen.active { display: block; animation: fadeIn 0.2s ease-in-out; }
 
-    /* Card de Resumo */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards de Veículos */
     .car-card {
-      position: relative; border-radius: 14px; margin-bottom: 16px;
-      overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-      border: 1px solid #e2e8f0; background-color: #0f172a;
+      position: relative; border-radius: 16px; margin-bottom: 16px;
+      overflow: hidden; background-color: #1e293b;
       background-size: cover; background-position: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
     }
     .car-card-overlay {
-      background: linear-gradient(135deg, rgba(15, 23, 42, 0.88) 0%, rgba(15, 23, 42, 0.72) 100%);
-      padding: 16px; backdrop-filter: blur(1px);
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.75) 0%, rgba(15, 23, 42, 0.95) 100%);
+      padding: 16px;
     }
     .car-card-header {
-      display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;
     }
-    .car-card-header h3 {
-      margin: 0; font-size: 16px; color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-    }
+    .car-card-header h3 { margin: 0; font-size: 17px; color: #fff; font-weight: 700; }
     .car-card-header .badge {
-      background: rgba(56, 189, 248, 0.2); color: #38bdf8;
-      border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 8px;
-      border-radius: 6px; font-size: 11px; font-weight: bold;
+      background: rgba(56, 189, 248, 0.15); color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3); padding: 4px 8px;
+      border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
     }
-    .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .metric-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
     .metric-box {
-      background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.18);
-      border-radius: 8px; padding: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px; padding: 10px 12px;
     }
     .metric-box small {
-      display: block; color: #94a3b8; font-size: 10px; margin-bottom: 2px;
+      display: block; color: #94a3b8; font-size: 10px; margin-bottom: 4px;
       text-transform: uppercase; font-weight: 600;
     }
-    .metric-box strong { font-size: 15px; color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+    .metric-box strong { font-size: 15px; color: #f8fafc; font-weight: 600; }
 
-    /* Formulários */
-    .form-box { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-    label { display: block; margin-top: 10px; font-size: 12px; font-weight: 600; color: #475569; }
+    /* Barra de Navegação Inferior (Thumb Friendly) */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #0f172a; border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex; justify-content: space-around; align-items: center;
+      padding: 8px 10px 12px; z-index: 50;
+      max-width: 480px; margin: 0 auto;
+    }
+    .nav-btn {
+      background: none; border: none; color: #64748b;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      font-size: 10px; font-weight: 600; cursor: pointer; flex: 1;
+    }
+    .nav-btn .icon { font-size: 20px; line-height: 1; }
+    .nav-btn.active { color: #38bdf8; }
+
+    /* Botão Flutuante Central de Ação (+) */
+    .action-fab {
+      background: #0284c7; color: white; border: none;
+      width: 46px; height: 46px; border-radius: 50%;
+      font-size: 24px; font-weight: 300; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.5); cursor: pointer;
+      margin-top: -18px;
+    }
+
+    /* Modal de Ações Rápidas */
+    .fab-menu {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(2px); z-index: 60; display: none;
+      justify-content: flex-end; flex-direction: column; padding: 20px;
+    }
+    .fab-menu.active { display: flex; }
+    .fab-sheet {
+      background: #1e293b; border-radius: 16px; padding: 12px;
+      display: flex; flex-direction: column; gap: 8px; border: 1px solid rgba(255,255,255,0.1);
+      max-width: 440px; width: 100%; margin: 0 auto;
+    }
+    .fab-item {
+      background: rgba(255,255,255,0.05); border: none; padding: 14px 16px;
+      border-radius: 10px; color: #fff; font-size: 14px; font-weight: 600;
+      text-align: left; display: flex; align-items: center; gap: 12px; cursor: pointer;
+    }
+    .fab-cancel {
+      background: none; border: none; color: #94a3b8; padding: 12px;
+      text-align: center; font-size: 14px; cursor: pointer;
+    }
+
+    /* Formulários Mobile */
+    .form-box {
+      background: #1e293b; border-radius: 16px; padding: 18px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    label { display: block; margin-top: 12px; font-size: 12px; font-weight: 600; color: #94a3b8; }
     input, select {
-      width: 100%; padding: 9px; margin-top: 4px; border: 1px solid #cbd5e1;
-      border-radius: 6px; font-size: 14px; background: #fff;
+      width: 100%; padding: 12px; margin-top: 5px; border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px; font-size: 15px; background: #0f172a; color: #fff;
     }
+    input:focus, select:focus { outline: none; border-color: #38bdf8; }
     .btn-submit {
-      width: 100%; margin-top: 16px; padding: 12px; background: #0284c7; color: white;
-      border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer;
+      width: 100%; margin-top: 18px; padding: 14px; background: #0284c7; color: white;
+      border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer;
     }
-    .btn-gps { margin-top: 4px; padding: 6px 10px; font-size: 11px; background: #e2e8f0; border: none; border-radius: 4px; }
-    .status-msg { margin-top: 10px; font-size: 12px; text-align: center; font-weight: bold; }
+    .btn-gps {
+      margin-top: 6px; padding: 8px 12px; font-size: 12px; background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1); color: #38bdf8; border-radius: 8px; cursor: pointer;
+    }
+    .status-msg { margin-top: 12px; font-size: 13px; text-align: center; font-weight: 600; }
 
-    /* Listas das Consultas */
-    .month-group { background: #fff; border-radius: 10px; margin-bottom: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
-    .month-header { background: #f8fafc; padding: 10px 14px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; }
-    .history-item { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; font-size: 12px; display: flex; justify-content: space-between; }
+    /* Grupos de Mês / Listas */
+    .month-group {
+      background: #1e293b; border-radius: 14px; margin-bottom: 12px;
+      border: 1px solid rgba(255,255,255,0.08); overflow: hidden;
+    }
+    .month-header {
+      background: rgba(255,255,255,0.03); padding: 12px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.06); display: flex;
+      justify-content: space-between; font-weight: 700; font-size: 13px;
+    }
+    .history-item {
+      padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 13px; display: flex; justify-content: space-between; align-items: center;
+    }
     .history-item:last-child { border-bottom: none; }
   </style>
 </head>
 <body>
 
-  <!-- Menu Lateral Fixo -->
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <h2>Meus Veículos</h2>
-      <small>Controle de Gastos</small>
+  <!-- Cabeçalho -->
+  <header>
+    <h1 id="screen-title">Resumo Geral</h1>
+    <button class="btn-reload" onclick="carregarDados()">↻</button>
+  </header>
+
+  <main class="container">
+    <!-- 1. RESUMO -->
+    <section id="screen-resumo" class="screen active">
+      <div id="resumo-loading" style="text-align:center; padding:30px 0; color:#94a3b8; font-size:13px;">Sincronizando com a planilha...</div>
+      <div id="resumo-cards"></div>
+    </section>
+
+    <!-- 2. CONSULTA COMBUSTÍVEL -->
+    <section id="screen-consultar-gas" class="screen">
+      <label>Veículo:</label>
+      <select id="filtro-veiculo-gas" onchange="renderizarConsultaGasolina()"></select>
+      <div id="lista-consulta-gas" style="margin-top:14px;"></div>
+    </section>
+
+    <!-- 3. CONSULTA RECARGAS -->
+    <section id="screen-consultar-elec" class="screen">
+      <label>Veículo:</label>
+      <select id="filtro-veiculo-elec" onchange="renderizarConsultaEnergia(false)"></select>
+      <div id="lista-consulta-elec" style="margin-top:14px;"></div>
+    </section>
+
+    <!-- 4. CONSULTA ACADEMIA -->
+    <section id="screen-consultar-acad" class="screen">
+      <label>Veículo:</label>
+      <select id="filtro-veiculo-acad" onchange="renderizarConsultaEnergia(true)"></select>
+      <div id="lista-consulta-acad" style="margin-top:14px;"></div>
+    </section>
+
+    <!-- 5. FORMULÁRIO ABASTECER -->
+    <section id="screen-gasolina" class="screen">
+      <form class="form-box" onsubmit="salvar(event, 'gasolina')">
+        <label>Data e Hora</label>
+        <input type="datetime-local" id="gas-datahora" required>
+        <label>Veículo</label>
+        <select id="gas-placa" required></select>
+        <label>KM Atual</label>
+        <input type="text" inputmode="numeric" id="gas-km" placeholder="Ex: 8352" required>
+        <label>Litros</label>
+        <input type="text" inputmode="decimal" id="gas-litros" placeholder="Ex: 35,00" required>
+        <label>Valor Total (R$)</label>
+        <input type="text" inputmode="decimal" id="gas-valor" placeholder="Ex: 245,95" required>
+        <label>Tipo de Gasolina</label>
+        <select id="gas-tipo">
+          <option value="NORMAL">NORMAL</option>
+          <option value="ADITIVADA">ADITIVADA</option>
+          <option value="PODIUM">PODIUM</option>
+        </select>
+        <label>Local GPS</label>
+        <input type="text" id="gas-local">
+        <button type="button" class="btn-gps" onclick="pegarLocal('gas-local')">📍 Obter GPS</button>
+        <button type="submit" class="btn-submit">Salvar na Planilha</button>
+        <div class="status-msg" id="msg-gasolina"></div>
+      </form>
+    </section>
+
+    <!-- 6. FORMULÁRIO RECARREGAR -->
+    <section id="screen-energia" class="screen">
+      <form class="form-box" onsubmit="salvar(event, 'energia')">
+        <label>Data e Hora</label>
+        <input type="datetime-local" id="elec-datahora" required>
+        <label>Veículo</label>
+        <select id="elec-placa" required></select>
+        <label>% Inicial</label>
+        <input type="text" inputmode="decimal" id="elec-pi" placeholder="Ex: 25,0" required>
+        <label>% Final</label>
+        <input type="text" inputmode="decimal" id="elec-pf" placeholder="Ex: 68,0" required>
+        <label>Consumo (kWh)</label>
+        <input type="text" inputmode="decimal" id="elec-kwa" placeholder="Ex: 8,28" required>
+        <label>Valor Total (R$)</label>
+        <input type="text" inputmode="decimal" id="elec-valor" placeholder="Ex: 16,50" required>
+        <label>Local GPS</label>
+        <input type="text" id="elec-local">
+        <button type="button" class="btn-gps" onclick="pegarLocal('elec-local')">📍 Obter GPS</button>
+        <label style="display:flex; align-items:center; gap:8px; margin-top:14px; cursor:pointer;">
+          <input type="checkbox" id="elec-academia" style="width:auto; margin:0;"> Feito na Academia
+        </label>
+        <button type="submit" class="btn-submit">Salvar na Planilha</button>
+        <div class="status-msg" id="msg-energia"></div>
+      </form>
+    </section>
+
+    <!-- 7. FORMULÁRIO NOVO CARRO -->
+    <section id="screen-veiculo" class="screen">
+      <form class="form-box" onsubmit="salvar(event, 'veiculo')">
+        <label>Placa</label>
+        <input type="text" id="veic-placa" placeholder="Ex: TID-5G50" required>
+        <label>Marca</label>
+        <input type="text" id="veic-marca" placeholder="Ex: BYD" required>
+        <label>Modelo</label>
+        <input type="text" id="veic-modelo" placeholder="Ex: SONG PRO GS" required>
+        <button type="submit" class="btn-submit">Adicionar Veículo</button>
+        <div class="status-msg" id="msg-veiculo"></div>
+      </form>
+    </section>
+  </main>
+
+  <!-- Menu de Ações Rápidas (Abre no botão +) -->
+  <div class="fab-menu" id="fab-menu" onclick="toggleFab(false)">
+    <div class="fab-sheet" onclick="event.stopPropagation()">
+      <button class="fab-item" onclick="navigateFromFab('gasolina', 'Novo Abastecimento')">⛽ Novo Abastecimento</button>
+      <button class="fab-item" onclick="navigateFromFab('energia', 'Nova Recarga')">🔋 Nova Recarga</button>
+      <button class="fab-item" onclick="navigateFromFab('veiculo', 'Cadastrar Veículo')">🚗 Cadastrar Carro</button>
+      <button class="fab-cancel" onclick="toggleFab(false)">Cancelar</button>
     </div>
-    <ul class="sidebar-menu">
-      <li class="sidebar-item active" onclick="navigate('resumo', 'Resumo Geral', this)">🏠 Resumo</li>
-      <li class="sidebar-item" onclick="navigate('consultar-gas', 'Consulta de Combustível', this)">📊 Combustível</li>
-      <li class="sidebar-item" onclick="navigate('consultar-elec', 'Consulta de Recargas', this)">⚡ Recargas</li>
-      <li class="sidebar-item" onclick="navigate('consultar-acad', 'Recargas na Academia', this)">🏋️ Academia</li>
-      <li class="sidebar-item" onclick="navigate('gasolina', 'Novo Abastecimento', this)">⛽ Abastecer</li>
-      <li class="sidebar-item" onclick="navigate('energia', 'Nova Recarga', this)">🔋 Recarregar</li>
-      <li class="sidebar-item" onclick="navigate('veiculo', 'Cadastrar Veículo', this)">🚗 Novo Carro</li>
-    </ul>
-  </aside>
-
-  <!-- Área Principal -->
-  <div class="main-wrapper">
-    <header>
-      <h1 id="screen-title">Resumo Geral</h1>
-    </header>
-
-    <main class="container">
-      <!-- 1. RESUMO -->
-      <section id="screen-resumo" class="screen active">
-        <div id="resumo-loading" style="text-align:center; padding:20px; color:#64748b; font-size:13px;">Carregando dados da planilha...</div>
-        <div id="resumo-cards"></div>
-      </section>
-
-      <!-- 2. CONSULTA COMBUSTÍVEL -->
-      <section id="screen-consultar-gas" class="screen">
-        <label>Filtrar por Veículo:</label>
-        <select id="filtro-veiculo-gas" onchange="renderizarConsultaGasolina()"></select>
-        <div id="lista-consulta-gas" style="margin-top:12px;"></div>
-      </section>
-
-      <!-- 3. CONSULTA RECARGAS (EXTERNAS) -->
-      <section id="screen-consultar-elec" class="screen">
-        <label>Filtrar por Veículo:</label>
-        <select id="filtro-veiculo-elec" onchange="renderizarConsultaEnergia(false)"></select>
-        <div id="lista-consulta-elec" style="margin-top:12px;"></div>
-      </section>
-
-      <!-- 4. CONSULTA RECARGAS ACADEMIA -->
-      <section id="screen-consultar-acad" class="screen">
-        <label>Filtrar por Veículo:</label>
-        <select id="filtro-veiculo-acad" onchange="renderizarConsultaEnergia(true)"></select>
-        <div id="lista-consulta-acad" style="margin-top:12px;"></div>
-      </section>
-
-      <!-- 5. NOVO ABASTECIMENTO -->
-      <section id="screen-gasolina" class="screen">
-        <form class="form-box" onsubmit="salvar(event, 'gasolina')">
-          <label>Data e Hora</label>
-          <input type="datetime-local" id="gas-datahora" required>
-          <label>Veículo</label>
-          <select id="gas-placa" required></select>
-          <label>KM Atual</label>
-          <input type="text" inputmode="numeric" id="gas-km" placeholder="Ex: 8352" required>
-          <label>Litros</label>
-          <input type="text" inputmode="decimal" id="gas-litros" placeholder="Ex: 35,00" required>
-          <label>Valor (R$)</label>
-          <input type="text" inputmode="decimal" id="gas-valor" placeholder="Ex: 245,95" required>
-          <label>Tipo de Gasolina</label>
-          <select id="gas-tipo">
-            <option value="NORMAL">COMUM</option>
-            <option value="ADITIVADA">ADITIVADA</option>
-            <option value="PODIUM">PODIUM</option>
-          </select>
-          <label>Local GPS</label>
-          <input type="text" id="gas-local">
-          <button type="button" class="btn-gps" onclick="pegarLocal('gas-local')">📍 Obter GPS</button>
-          <button type="submit" class="btn-submit">Salvar na Planilha</button>
-          <div class="status-msg" id="msg-gasolina"></div>
-        </form>
-      </section>
-
-      <!-- 6. NOVA RECARGA -->
-      <section id="screen-energia" class="screen">
-        <form class="form-box" onsubmit="salvar(event, 'energia')">
-          <label>Data e Hora</label>
-          <input type="datetime-local" id="elec-datahora" required>
-          <label>Veículo</label>
-          <select id="elec-placa" required></select>
-          <label>% Inicial</label>
-          <input type="text" inputmode="decimal" id="elec-pi" placeholder="Ex: 25,0" required>
-          <label>% Final</label>
-          <input type="text" inputmode="decimal" id="elec-pf" placeholder="Ex: 68,0" required>
-          <label>Consumo (kWh)</label>
-          <input type="text" inputmode="decimal" id="elec-kwa" placeholder="Ex: 8,28" required>
-          <label>Valor (R$)</label>
-          <input type="text" inputmode="decimal" id="elec-valor" placeholder="Ex: 16,50" required>
-          <label>Local GPS</label>
-          <input type="text" id="elec-local">
-          <button type="button" class="btn-gps" onclick="pegarLocal('elec-local')">📍 Obter GPS</button>
-          <label style="display:flex; align-items:center; gap:8px; margin-top:12px; cursor:pointer;">
-            <input type="checkbox" id="elec-academia" style="width:auto; margin:0;"> Recarga na Academia
-          </label>
-          <button type="submit" class="btn-submit">Salvar na Planilha</button>
-          <div class="status-msg" id="msg-energia"></div>
-        </form>
-      </section>
-
-      <!-- 7. NOVO VEÍCULO -->
-      <section id="screen-veiculo" class="screen">
-        <form class="form-box" onsubmit="salvar(event, 'veiculo')">
-          <label>Placa</label>
-          <input type="text" id="veic-placa" placeholder="Ex: TID-5G50" required>
-          <label>Marca</label>
-          <input type="text" id="veic-marca" placeholder="Ex: BYD" required>
-          <label>Modelo</label>
-          <input type="text" id="veic-modelo" placeholder="Ex: SONG PRO GS" required>
-          <button type="submit" class="btn-submit">Adicionar Veículo</button>
-          <div class="status-msg" id="msg-veiculo"></div>
-        </form>
-      </section>
-    </main>
   </div>
+
+  <!-- Bottom Navigation Fixa -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="btn-nav-resumo" onclick="navigate('resumo', 'Resumo Geral', this)">
+      <span class="icon">🏠</span>
+      <span>Início</span>
+    </button>
+    <button class="nav-btn" id="btn-nav-gas" onclick="navigate('consultar-gas', 'Combustível', this)">
+      <span class="icon">⛽</span>
+      <span>Gasolina</span>
+    </button>
+    
+    <button class="action-fab" onclick="toggleFab(true)">+</button>
+
+    <button class="nav-btn" id="btn-nav-elec" onclick="navigate('consultar-elec', 'Recargas', this)">
+      <span class="icon">⚡</span>
+      <span>Energia</span>
+    </button>
+    <button class="nav-btn" id="btn-nav-acad" onclick="navigate('consultar-acad', 'Academia', this)">
+      <span class="icon">🏋️</span>
+      <span>Academia</span>
+    </button>
+  </nav>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbw2eaaPCNMQbCcC3mVJKnDtcmJx11itHGB1KVukEC-6X3NvVK4WmVfwk3rTfQt9ry25/exec";
 
     let DB = { veiculos: [], abastecimentos: [], recargas: [] };
 
+    function toggleFab(open) {
+      document.getElementById('fab-menu').classList.toggle('active', open);
+    }
+
+    function navigateFromFab(screenId, title) {
+      toggleFab(false);
+      navigate(screenId, title, null);
+    }
+
     function navigate(screenId, title, elem) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      
       document.getElementById('screen-' + screenId).classList.add('active');
       document.getElementById('screen-title').innerText = title;
-      if (elem) elem.classList.add('active');
+      
+      if (elem) {
+        elem.classList.add('active');
+      }
 
       if (screenId === 'consultar-gas') renderizarConsultaGasolina();
       if (screenId === 'consultar-elec') renderizarConsultaEnergia(false);
@@ -269,7 +353,7 @@
       const loading = document.getElementById('resumo-loading');
       if (!res || res.status !== "success") {
         loading.innerText = "Erro retornado: " + (res ? res.message : "Sem dados.");
-        loading.style.color = "#dc2626";
+        loading.style.color = "#ef4444";
         return;
       }
 
@@ -279,16 +363,15 @@
         popularDropdowns();
       } catch (err) {
         loading.innerText = "Erro ao processar: " + err.message;
-        loading.style.color = "#dc2626";
+        loading.style.color = "#ef4444";
       }
     };
 
     async function carregarDados() {
       const loading = document.getElementById('resumo-loading');
       loading.style.display = 'block';
-      loading.innerText = "Carregando dados da planilha...";
+      loading.innerText = "Sincronizando com a planilha...";
 
-      // Tentativa 1: Fetch direto com redirect
       try {
         const response = await fetch(API_URL, { redirect: "follow" });
         if (response.ok) {
@@ -296,11 +379,8 @@
           window.processarDadosPlanilha(res);
           return;
         }
-      } catch (errFetch) {
-        // Fallback para JSONP caso fetch seja barrado
-      }
+      } catch (err) {}
 
-      // Tentativa 2: Fallback via JSONP
       const antigo = document.getElementById('jsonp-script');
       if (antigo) antigo.remove();
 
@@ -308,12 +388,10 @@
       script.id = 'jsonp-script';
       const sep = API_URL.includes('?') ? '&' : '?';
       script.src = `${API_URL}${sep}callback=processarDadosPlanilha&_=${Date.now()}`;
-      
       script.onerror = function() {
-        loading.innerHTML = "Não foi possível carregar os dados.<br><br>Verifique se no Apps Script a implantação está ativa como <b>Qualquer pessoa</b> e com uma <b>Nova Versão</b> publicada.";
-        loading.style.color = "#dc2626";
+        loading.innerText = "Erro ao acessar a planilha.";
+        loading.style.color = "#ef4444";
       };
-
       document.body.appendChild(script);
     }
 
@@ -340,7 +418,7 @@
       container.innerHTML = '';
 
       if (!DB.veiculos || DB.veiculos.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:#64748b;">Nenhum veículo encontrado.</p>';
+        container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Nenhum veículo encontrado.</p>';
         return;
       }
 
@@ -373,19 +451,19 @@
               </div>
               <div class="metric-grid">
                 <div class="metric-box">
-                  <small>Combustível</small>
+                  <small>Gasolina</small>
                   <strong>${formataReal(totalGas)}</strong>
                 </div>
                 <div class="metric-box">
-                  <small>Energia Total</small>
+                  <small>Energia</small>
                   <strong>${formataReal(totalElec)}</strong>
                 </div>
                 <div class="metric-box">
-                  <small>Gasto Total</small>
+                  <small>Total Geral</small>
                   <strong style="color:#38bdf8;">${formataReal(totalGas + totalElec)}</strong>
                 </div>
                 <div class="metric-box">
-                  <small>Média Combustível</small>
+                  <small>Média Geral</small>
                   <strong>${mediaKmL} km/l</strong>
                 </div>
               </div>
@@ -411,7 +489,7 @@
       const mesesOrdenados = Object.keys(meses).sort(ordenarMesesDesc);
 
       if (mesesOrdenados.length === 0) {
-        container.innerHTML = '<p style="color:#64748b; text-align:center; padding:15px;">Nenhum abastecimento encontrado.</p>';
+        container.innerHTML = '<p style="color:#94a3b8; text-align:center; padding:20px;">Nenhum abastecimento encontrado.</p>';
         return;
       }
 
@@ -423,10 +501,10 @@
         let htmlItens = itens.map(i => `
           <div class="history-item">
             <div>
-              <strong>${i.data}</strong> - ${i.tipoGasolina}<br>
-              <small style="color:#64748b;">Km: ${formataDec(i.km, 0)} | ${formataDec(i.litros, 2)} L</small>
+              <strong style="color:#f8fafc;">${i.data}</strong> <span style="font-size:11px; color:#94a3b8;">(${i.tipoGasolina})</span><br>
+              <small style="color:#94a3b8;">Km: ${formataDec(i.km, 0)} | ${formataDec(i.litros, 2)} L</small>
             </div>
-            <div style="font-weight:bold; color:#0f172a;">${formataReal(i.valor)}</div>
+            <div style="font-weight:700; color:#38bdf8;">${formataReal(i.valor)}</div>
           </div>
         `).join('');
 
@@ -434,7 +512,7 @@
           <div class="month-group">
             <div class="month-header">
               <span>Mês: ${mes}</span>
-              <span style="color:#0284c7;">${formataReal(totalMesValor)} (${formataDec(totalMesLitros, 1)} L)</span>
+              <span style="color:#38bdf8;">${formataReal(totalMesValor)} (${formataDec(totalMesLitros, 1)} L)</span>
             </div>
             ${htmlItens}
           </div>
@@ -461,11 +539,11 @@
       const mesesOrdenados = Object.keys(meses).sort(ordenarMesesDesc);
 
       if (mesesOrdenados.length === 0) {
-        container.innerHTML = `<p style="color:#64748b; text-align:center; padding:15px;">Nenhum registro encontrado.</p>`;
+        container.innerHTML = `<p style="color:#94a3b8; text-align:center; padding:20px;">Nenhuma recarga encontrada.</p>`;
         return;
       }
 
-      // Tela exclusiva da Academia: Contagem x R$ 60,00
+      // Modo Academia: Contagem x R$ 60,00
       if (apenasAcademia) {
         mesesOrdenados.forEach(mes => {
           const qtd = meses[mes].length;
@@ -473,11 +551,11 @@
 
           container.innerHTML += `
             <div class="month-group" style="padding: 14px 16px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <span style="font-weight: bold; font-size: 15px; color: #0f172a;">Mês: ${mes}</span>
-                <span style="font-size: 16px; font-weight: bold; color: #16a34a;">${formataReal(totalMes)}</span>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-weight: 700; font-size: 15px; color: #f8fafc;">Mês: ${mes}</span>
+                <span style="font-size: 16px; font-weight: 700; color: #4ade80;">${formataReal(totalMes)}</span>
               </div>
-              <div style="font-size: 13px; color: #64748b;">
+              <div style="font-size: 12px; color: #94a3b8;">
                 ${qtd} ${qtd === 1 ? 'ida' : 'idas'} no mês (R$ 60,00 cada)
               </div>
             </div>
@@ -486,7 +564,7 @@
         return;
       }
 
-      // Recargas normais/externas
+      // Modo Recargas Normais
       mesesOrdenados.forEach(mes => {
         const itens = meses[mes];
         const totalMesValor = itens.reduce((s, i) => s + (i.valor || 0), 0);
@@ -495,10 +573,10 @@
         let htmlItens = itens.map(i => `
           <div class="history-item">
             <div>
-              <strong>${i.data}</strong><br>
-              <small style="color:#64748b;">${formataDec(i.percInicial, 1)}% ➔ ${formataDec(i.percFinal, 1)}% | ${formataDec(i.kwa, 2)} kWh</small>
+              <strong style="color:#f8fafc;">${i.data}</strong><br>
+              <small style="color:#94a3b8;">${formataDec(i.percInicial, 1)}% ➔ ${formataDec(i.percFinal, 1)}% | ${formataDec(i.kwa, 2)} kWh</small>
             </div>
-            <div style="font-weight:bold; color:#0f172a;">${formataReal(i.valor)}</div>
+            <div style="font-weight:700; color:#4ade80;">${formataReal(i.valor)}</div>
           </div>
         `).join('');
 
@@ -506,7 +584,7 @@
           <div class="month-group">
             <div class="month-header">
               <span>Mês: ${mes}</span>
-              <span style="color:#16a34a;">${formataReal(totalMesValor)} (${formataDec(totalMesKwa, 1)} kWh)</span>
+              <span style="color:#4ade80;">${formataReal(totalMesValor)} (${formataDec(totalMesKwa, 1)} kWh)</span>
             </div>
             ${htmlItens}
           </div>
@@ -518,7 +596,7 @@
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           pos => document.getElementById(inputId).value = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`,
-          () => alert("Ative a localização no dispositivo.")
+          () => alert("Ative a localização no celular.")
         );
       }
     }
@@ -528,7 +606,7 @@
       const btn = e.target.querySelector('button[type="submit"]');
       const msg = document.getElementById('msg-' + tipo);
       btn.disabled = true;
-      msg.style.color = "#0284c7";
+      msg.style.color = "#38bdf8";
       msg.innerText = "Gravando na planilha...";
 
       let payload = { tipo };
@@ -563,19 +641,18 @@
           body: JSON.stringify(payload)
         });
 
-        msg.style.color = "#16a34a";
+        msg.style.color = "#4ade80";
         msg.innerText = "✓ Salvo com sucesso!";
         e.target.reset();
         setTimeout(carregarDados, 1500);
       } catch (err) {
-        msg.style.color = "#dc2626";
+        msg.style.color = "#ef4444";
         msg.innerText = "Erro ao conectar.";
       } finally {
         btn.disabled = false;
       }
     }
 
-    // Inicialização da Data/Hora
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     const dtISO = now.toISOString().slice(0, 16);
