@@ -3,6 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- Ícone para Android / Chrome / iOS embutido via Data URI -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230284c7'/><text x='50%' y='55%' dominant-baseline='central' text-anchor='middle' font-size='55'>🚗</text></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230284c7'/><text x='50%' y='55%' dominant-baseline='central' text-anchor='middle' font-size='55'>🚗</text></svg>">
+
+  <!-- Configuração PWA / Tela Cheia Nativa no Android -->
+  <meta name="theme-color" content="#0b1120">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="data:application/manifest+json,{
+    %22name%22:%20%22Controle%20de%20Ve%C3%ADculos%22,
+    %22short_name%22:%20%22Ve%C3%ADculos%22,
+    %22start_url%22:%20%22.%22,
+    %22display%22:%20%22standalone%22,
+    %22background_color%22:%20%22%230b1120%22,
+    %22theme_color%22:%20%22%230b1120%22,
+    %22icons%22:[{
+      %22src%22:%20%22data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230284c7'/><text x='50%' y='55%' dominant-baseline='central' text-anchor='middle' font-size='55'>🚗</text></svg>%22,
+      %22sizes%22:%20%22192x192 512x512%22,
+      %22type%22:%20%22image/svg+xml%22
+    }]
+  }">
   <title>Controle de Veículos</title>
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
