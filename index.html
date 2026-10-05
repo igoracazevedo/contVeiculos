@@ -12,6 +12,9 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
 
+  <!-- Supabase JS Client Oficial -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     
@@ -210,7 +213,7 @@
     .month-content { display: none; border-top: 1px solid rgba(255,255,255,0.06); }
     .month-group.open .month-content { display: block; }
 
-    /* Nível 3: Detalhe do Registro */
+    /* Nível 3: Detalhes */
     .history-card {
       border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 14px;
       transition: background 0.15s;
@@ -244,7 +247,7 @@
   <main class="container">
     <!-- 1. RESUMO -->
     <section id="screen-resumo" class="screen active">
-      <div id="resumo-loading" style="text-align:center; padding:30px 0; color:#94a3b8; font-size:13px;">Sincronizando com a planilha...</div>
+      <div id="resumo-loading" style="text-align:center; padding:30px 0; color:#94a3b8; font-size:13px;">Conectando ao Supabase...</div>
       <div id="resumo-cards"></div>
     </section>
 
@@ -262,7 +265,7 @@
       <div id="lista-consulta-elec" style="margin-top:14px;"></div>
     </section>
 
-    <!-- 4. CONSULTA ACADEMIA (APENAS ACADEMIA = TRUE) -->
+    <!-- 4. CONSULTA ACADEMIA -->
     <section id="screen-consultar-acad" class="screen">
       <label>Veículo:</label>
       <select id="filtro-veiculo-acad" onchange="renderizarConsultaEnergia(true)"></select>
@@ -273,7 +276,7 @@
     <section id="screen-gasolina" class="screen">
       <form class="form-box" onsubmit="salvar(event, 'gasolina')">
         <div class="form-banner-edit" id="banner-edit-gas">✏️ Editando registro selecionado</div>
-        <input type="hidden" id="gas-original-datahora">
+        <input type="hidden" id="gas-id">
 
         <label>Data e Hora</label>
         <input type="datetime-local" id="gas-datahora" required>
@@ -303,7 +306,7 @@
         <label>Local GPS</label>
         <input type="text" id="gas-local">
         <button type="button" class="btn-gps" onclick="pegarLocal('gas-local')">📍 Obter GPS</button>
-        <button type="submit" class="btn-submit" id="btn-submit-gas">Salvar na Planilha</button>
+        <button type="submit" class="btn-submit" id="btn-submit-gas">Salvar no Supabase</button>
         <button type="button" class="btn-delete" id="btn-del-gas" onclick="confirmarExclusao('gasolina')">🗑️ Excluir este Registro</button>
         <div class="status-msg" id="msg-gasolina"></div>
       </form>
@@ -313,7 +316,7 @@
     <section id="screen-energia" class="screen">
       <form class="form-box" onsubmit="salvar(event, 'energia')">
         <div class="form-banner-edit" id="banner-edit-elec">✏️ Editando registro selecionado</div>
-        <input type="hidden" id="elec-original-datahora">
+        <input type="hidden" id="elec-id">
 
         <label>Data e Hora</label>
         <input type="datetime-local" id="elec-datahora" required>
@@ -333,7 +336,7 @@
         <label style="display:flex; align-items:center; gap:8px; margin-top:14px; cursor:pointer;">
           <input type="checkbox" id="elec-academia" style="width:auto; margin:0;"> Feito na Academia
         </label>
-        <button type="submit" class="btn-submit" id="btn-submit-elec">Salvar na Planilha</button>
+        <button type="submit" class="btn-submit" id="btn-submit-elec">Salvar no Supabase</button>
         <button type="button" class="btn-delete" id="btn-del-elec" onclick="confirmarExclusao('energia')">🗑️ Excluir este Registro</button>
         <div class="status-msg" id="msg-energia"></div>
       </form>
@@ -348,6 +351,8 @@
         <input type="text" id="veic-marca" placeholder="Ex: BYD" required>
         <label>Modelo</label>
         <input type="text" id="veic-modelo" placeholder="Ex: SONG PRO GS" required>
+        <label>Link da Foto (Google Drive ou Imgur)</label>
+        <input type="text" id="veic-foto" placeholder="Cole o link da imagem">
         <button type="submit" class="btn-submit">Adicionar Veículo</button>
         <div class="status-msg" id="msg-veiculo"></div>
       </form>
@@ -388,7 +393,11 @@
   </nav>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbw2eaaPCNMQbCcC3mVJKnDtcmJx11itHGB1KVukEC-6X3NvVK4WmVfwk3rTfQt9ry25/exec";
+    // Configurações do Supabase
+    const SUPABASE_URL = "https://cyzohyvnpnjpkuusdxiq.supabase.co"; 
+    const SUPABASE_ANON_KEY = "sb_publishable_HxPK4_XJRllpINvKnlAc3A_vMvzcgAc";
+
+    const dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let DB = { veiculos: [], abastecimentos: [], recargas: [] };
 
@@ -448,15 +457,27 @@
       }
     }
 
+    function formatarIsoParaDataPtBr(isoStr) {
+      if (!isoStr) return { data: "", dataHora: "" };
+      const d = new Date(isoStr);
+      if (isNaN(d.getTime())) return { data: isoStr, dataHora: isoStr };
+      const dia = String(d.getDate()).padStart(2, '0');
+      const mes = String(d.getMonth() + 1).padStart(2, '0');
+      const ano = d.getFullYear();
+      const hora = String(d.getHours()).padStart(2, '0');
+      const min = String(d.getMinutes()).padStart(2, '0');
+      return {
+        data: `${dia}/${mes}/${ano}`,
+        dataHora: `${dia}/${mes}/${ano} ${hora}:${min}:00`
+      };
+    }
+
     function extrairAnoEMes(dataStr) {
       if (!dataStr) return { ano: "Outros", mes: "Outros" };
       const clean = String(dataStr).split(' ')[0].trim();
       const p = clean.split('/');
       if (p.length === 3) {
-        return {
-          ano: p[2],
-          mes: p[1].padStart(2, '0')
-        };
+        return { ano: p[2], mes: p[1].padStart(2, '0') };
       }
       return { ano: "Outros", mes: "Outros" };
     }
@@ -479,7 +500,6 @@
         m = parseInt(pHora[1] || 0, 10);
         s = parseInt(pHora[2] || 0, 10);
       }
-
       return new Date(ano, mes, dia, h, m, s).getTime();
     }
 
@@ -517,134 +537,70 @@
       `;
     }
 
-    function abrirNovoForm(tipo) {
-      toggleFab(false);
-      const now = new Date();
-      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-      const dtISO = now.toISOString().slice(0, 16);
-
-      if (tipo === 'gasolina') {
-        document.getElementById('banner-edit-gas').style.display = 'none';
-        document.getElementById('btn-del-gas').style.display = 'none';
-        document.getElementById('gas-original-datahora').value = '';
-        document.getElementById('btn-submit-gas').innerText = 'Salvar na Planilha';
-        document.getElementById('gas-datahora').value = dtISO;
-        document.getElementById('gas-km').value = '';
-        document.getElementById('gas-litros').value = '';
-        document.getElementById('gas-valor').value = '';
-        document.getElementById('gas-preco-litro').value = 'R$ 0,00 / L';
-        document.getElementById('gas-tipo').value = 'COMUM';
-        document.getElementById('gas-local').value = '';
-        navigate('gasolina', 'Novo Abastecimento', null);
-      } else if (tipo === 'energia') {
-        document.getElementById('banner-edit-elec').style.display = 'none';
-        document.getElementById('btn-del-elec').style.display = 'none';
-        document.getElementById('elec-original-datahora').value = '';
-        document.getElementById('btn-submit-elec').innerText = 'Salvar na Planilha';
-        document.getElementById('elec-datahora').value = dtISO;
-        document.getElementById('elec-pi').value = '';
-        document.getElementById('elec-pf').value = '';
-        document.getElementById('elec-kwa').value = '';
-        document.getElementById('elec-valor').value = '';
-        document.getElementById('elec-local').value = '';
-        document.getElementById('elec-academia').checked = false;
-        navigate('energia', 'Nova Recarga', null);
+    function formatarUrlFoto(url) {
+      if (!url) return "";
+      const driveMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+      if (driveMatch && driveMatch[1]) {
+        return "https://lh3.googleusercontent.com/d/" + driveMatch[1];
       }
+      return url;
     }
 
-    function editarAbastecimento(idx) {
-      const item = DB.abastecimentos[idx];
-      if (!item) return;
-
-      document.getElementById('banner-edit-gas').style.display = 'block';
-      document.getElementById('btn-del-gas').style.display = 'block';
-      document.getElementById('gas-original-datahora').value = item.dataHora;
-      document.getElementById('btn-submit-gas').innerText = 'Atualizar Registro';
-
-      document.getElementById('gas-placa').value = item.placa;
-      document.getElementById('gas-km').value = item.km;
-      document.getElementById('gas-litros').value = formataDec(item.litros, 2);
-      document.getElementById('gas-valor').value = formataDec(item.valor, 2);
-      
-      calcularPrecoLitro();
-      
-      let tipoNormalizado = String(item.tipoGasolina || "COMUM").trim().toUpperCase();
-      if (tipoNormalizado === "NORMAL") tipoNormalizado = "COMUM";
-      document.getElementById('gas-tipo').value = tipoNormalizado;
-
-      document.getElementById('gas-local').value = item.local || '';
-
-      if (item.dataHora && item.dataHora.includes('/')) {
-        const [d, t] = item.dataHora.split(' ');
-        const [day, mon, year] = d.split('/');
-        const timePart = t ? t.slice(0, 5) : "12:00";
-        document.getElementById('gas-datahora').value = `${year}-${mon.padStart(2,'0')}-${day.padStart(2,'0')}T${timePart}`;
-      }
-
-      navigate('gasolina', 'Editar Abastecimento', null);
-    }
-
-    function editarRecarga(idx) {
-      const item = DB.recargas[idx];
-      if (!item) return;
-
-      document.getElementById('banner-edit-elec').style.display = 'block';
-      document.getElementById('btn-del-elec').style.display = 'block';
-      document.getElementById('elec-original-datahora').value = item.dataHora;
-      document.getElementById('btn-submit-elec').innerText = 'Atualizar Registro';
-
-      document.getElementById('elec-placa').value = item.placa;
-      document.getElementById('elec-pi').value = formataDec(item.percInicial, 1);
-      document.getElementById('elec-pf').value = formataDec(item.percFinal, 1);
-      document.getElementById('elec-kwa').value = formataDec(item.kwa, 2);
-      document.getElementById('elec-valor').value = formataDec(item.valor, 2);
-      document.getElementById('elec-local').value = item.local || '';
-      document.getElementById('elec-academia').checked = (item.academia === true);
-
-      if (item.dataHora && item.dataHora.includes('/')) {
-        const [d, t] = item.dataHora.split(' ');
-        const [day, mon, year] = d.split('/');
-        const timePart = t ? t.slice(0, 5) : "12:00";
-        document.getElementById('elec-datahora').value = `${year}-${mon.padStart(2,'0')}-${day.padStart(2,'0')}T${timePart}`;
-      }
-
-      navigate('energia', 'Editar Recarga', null);
-    }
-
-    window.processarDadosPlanilha = function(res) {
+    async function carregarDados() {
       const loading = document.getElementById('resumo-loading');
-      if (!res || res.status !== "success") {
-        loading.innerText = "Erro: " + (res ? res.message : "Sem dados.");
-        loading.style.color = "#ef4444";
-        return;
-      }
+      loading.style.display = 'block';
+      loading.innerText = "Sincronizando com o Supabase...";
+
       try {
-        DB = res;
+        const [resV, resG, resE] = await Promise.all([
+          dbClient.from('veiculos').select('*').order('placa'),
+          dbClient.from('abastecimentos').select('*').order('created_at', { ascending: false }),
+          dbClient.from('recargas').select('*').order('created_at', { ascending: false })
+        ]);
+
+        if (resV.error) throw resV.error;
+        if (resG.error) throw resG.error;
+        if (resE.error) throw resE.error;
+
+        DB.veiculos = (resV.data || []).map(v => ({
+          placa: v.placa,
+          marca: v.marca,
+          modelo: v.modelo,
+          foto: formatarUrlFoto(v.foto)
+        }));
+
+        DB.abastecimentos = (resG.data || []).map(g => ({
+          id: g.id,
+          dataHora: g.data_hora,
+          data: g.data,
+          placa: g.placa,
+          km: Number(g.km),
+          litros: Number(g.litros),
+          valor: Number(g.valor),
+          tipoGasolina: g.tipo_gasolina || 'COMUM',
+          local: g.local || ''
+        }));
+
+        DB.recargas = (resE.data || []).map(e => ({
+          id: e.id,
+          dataHora: e.data_hora,
+          data: e.data,
+          placa: e.placa,
+          percInicial: Number(e.perc_inicial),
+          percFinal: Number(e.perc_final),
+          kwa: Number(e.kwa),
+          valor: Number(e.valor),
+          local: e.local || '',
+          academia: e.academia === true
+        }));
+
+        loading.style.display = 'none';
         renderizarResumo();
         popularDropdowns();
       } catch (err) {
-        loading.innerText = "Erro ao processar: " + err.message;
+        loading.innerText = "Erro ao conectar ao Supabase: " + err.message;
         loading.style.color = "#ef4444";
       }
-    };
-
-    function carregarDados() {
-      const loading = document.getElementById('resumo-loading');
-      loading.style.display = 'block';
-      loading.innerText = "Sincronizando com a planilha...";
-
-      const antigo = document.getElementById('jsonp-script');
-      if (antigo) antigo.remove();
-
-      const script = document.createElement('script');
-      script.id = 'jsonp-script';
-      const sep = API_URL.includes('?') ? '&' : '?';
-      script.src = `${API_URL}${sep}callback=processarDadosPlanilha&_=${Date.now()}`;
-      script.onerror = function() {
-        loading.innerText = "Erro ao acessar a planilha.";
-        loading.style.color = "#ef4444";
-      };
-      document.body.appendChild(script);
     }
 
     function popularDropdowns() {
@@ -664,12 +620,11 @@
     }
 
     function renderizarResumo() {
-      document.getElementById('resumo-loading').style.display = 'none';
       const container = document.getElementById('resumo-cards');
       container.innerHTML = '';
 
       if (!DB.veiculos || DB.veiculos.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Nenhum veículo encontrado.</p>';
+        container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Nenhum veículo cadastrado no Supabase.</p>';
         return;
       }
 
@@ -725,7 +680,6 @@
       });
     }
 
-    // Estruturação hierárquica por Ano -> Mês
     function agruparPorAnoEMes(lista) {
       const arvore = {};
       lista.forEach(item => {
@@ -745,7 +699,6 @@
       });
     }
 
-    // 2. CONSULTA COMBUSTÍVEL (Ano -> Mês -> Detalhes)
     function renderizarConsultaGasolina() {
       const placa = normalizarPlaca(document.getElementById('filtro-veiculo-gas').value);
       const container = document.getElementById('lista-consulta-gas');
@@ -851,7 +804,6 @@
       });
     }
 
-    // 3 e 4. CONSULTA ENERGIA / ACADEMIA (Ano -> Mês -> Detalhes)
     function renderizarConsultaEnergia(apenasAcademia) {
       const selectId = apenasAcademia ? 'filtro-veiculo-acad' : 'filtro-veiculo-elec';
       const containerId = apenasAcademia ? 'lista-consulta-acad' : 'lista-consulta-elec';
@@ -883,7 +835,6 @@
           const itens = mesesDoAno[mes].sort(ordenarItensDesc);
           const qtdMes = itens.length;
           totalAnoQtd += qtdMes;
-
           const nomeMes = mes === "Outros" ? "Outros" : `Mês ${mes}`;
 
           if (apenasAcademia) {
@@ -981,6 +932,98 @@
       });
     }
 
+    function abrirNovoForm(tipo) {
+      toggleFab(false);
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      const dtISO = now.toISOString().slice(0, 16);
+
+      if (tipo === 'gasolina') {
+        document.getElementById('banner-edit-gas').style.display = 'none';
+        document.getElementById('btn-del-gas').style.display = 'none';
+        document.getElementById('gas-id').value = '';
+        document.getElementById('btn-submit-gas').innerText = 'Salvar no Supabase';
+        document.getElementById('gas-datahora').value = dtISO;
+        document.getElementById('gas-km').value = '';
+        document.getElementById('gas-litros').value = '';
+        document.getElementById('gas-valor').value = '';
+        document.getElementById('gas-preco-litro').value = 'R$ 0,00 / L';
+        document.getElementById('gas-tipo').value = 'COMUM';
+        document.getElementById('gas-local').value = '';
+        navigate('gasolina', 'Novo Abastecimento', null);
+      } else if (tipo === 'energia') {
+        document.getElementById('banner-edit-elec').style.display = 'none';
+        document.getElementById('btn-del-elec').style.display = 'none';
+        document.getElementById('elec-id').value = '';
+        document.getElementById('btn-submit-elec').innerText = 'Salvar no Supabase';
+        document.getElementById('elec-datahora').value = dtISO;
+        document.getElementById('elec-pi').value = '';
+        document.getElementById('elec-pf').value = '';
+        document.getElementById('elec-kwa').value = '';
+        document.getElementById('elec-valor').value = '';
+        document.getElementById('elec-local').value = '';
+        document.getElementById('elec-academia').checked = false;
+        navigate('energia', 'Nova Recarga', null);
+      }
+    }
+
+    function editarAbastecimento(idx) {
+      const item = DB.abastecimentos[idx];
+      if (!item) return;
+
+      document.getElementById('banner-edit-gas').style.display = 'block';
+      document.getElementById('btn-del-gas').style.display = 'block';
+      document.getElementById('gas-id').value = item.id;
+      document.getElementById('btn-submit-gas').innerText = 'Atualizar Registro';
+
+      document.getElementById('gas-placa').value = item.placa;
+      document.getElementById('gas-km').value = item.km;
+      document.getElementById('gas-litros').value = formataDec(item.litros, 2);
+      document.getElementById('gas-valor').value = formataDec(item.valor, 2);
+      calcularPrecoLitro();
+      
+      let tipoNormalizado = String(item.tipoGasolina || "COMUM").trim().toUpperCase();
+      if (tipoNormalizado === "NORMAL") tipoNormalizado = "COMUM";
+      document.getElementById('gas-tipo').value = tipoNormalizado;
+      document.getElementById('gas-local').value = item.local || '';
+
+      if (item.dataHora && item.dataHora.includes('/')) {
+        const [d, t] = item.dataHora.split(' ');
+        const [day, mon, year] = d.split('/');
+        const timePart = t ? t.slice(0, 5) : "12:00";
+        document.getElementById('gas-datahora').value = `${year}-${mon.padStart(2,'0')}-${day.padStart(2,'0')}T${timePart}`;
+      }
+
+      navigate('gasolina', 'Editar Abastecimento', null);
+    }
+
+    function editarRecarga(idx) {
+      const item = DB.recargas[idx];
+      if (!item) return;
+
+      document.getElementById('banner-edit-elec').style.display = 'block';
+      document.getElementById('btn-del-elec').style.display = 'block';
+      document.getElementById('elec-id').value = item.id;
+      document.getElementById('btn-submit-elec').innerText = 'Atualizar Registro';
+
+      document.getElementById('elec-placa').value = item.placa;
+      document.getElementById('elec-pi').value = formataDec(item.percInicial, 1);
+      document.getElementById('elec-pf').value = formataDec(item.percFinal, 1);
+      document.getElementById('elec-kwa').value = formataDec(item.kwa, 2);
+      document.getElementById('elec-valor').value = formataDec(item.valor, 2);
+      document.getElementById('elec-local').value = item.local || '';
+      document.getElementById('elec-academia').checked = (item.academia === true);
+
+      if (item.dataHora && item.dataHora.includes('/')) {
+        const [d, t] = item.dataHora.split(' ');
+        const [day, mon, year] = d.split('/');
+        const timePart = t ? t.slice(0, 5) : "12:00";
+        document.getElementById('elec-datahora').value = `${year}-${mon.padStart(2,'0')}-${day.padStart(2,'0')}T${timePart}`;
+      }
+
+      navigate('energia', 'Editar Recarga', null);
+    }
+
     function pegarLocal(inputId) {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -990,125 +1033,119 @@
       }
     }
 
-    window.confirmarGravacao = function(res) {
-      if (window._salvandoCallback) window._salvandoCallback(res);
-    };
-
-    function salvar(e, tipo) {
+    async function salvar(e, tipo) {
       e.preventDefault();
       const btn = e.target.querySelector('button[type="submit"]');
       const msg = document.getElementById('msg-' + tipo);
       btn.disabled = true;
       msg.style.color = "#38bdf8";
-      msg.innerText = "Gravando na planilha...";
+      msg.innerText = "Salvando no Supabase...";
 
-      let payload = { tipo };
+      try {
+        if (tipo === 'gasolina') {
+          const id = document.getElementById('gas-id').value;
+          const dtIso = document.getElementById('gas-datahora').value;
+          const { data, dataHora } = formatarIsoParaDataPtBr(dtIso);
 
-      if (tipo === 'gasolina') {
-        const origDt = document.getElementById('gas-original-datahora').value;
-        payload.isEdit = !!origDt;
-        payload.originalDataHora = origDt;
-        payload.dataHora = document.getElementById('gas-datahora').value;
-        payload.placa = document.getElementById('gas-placa').value;
-        payload.km = normalizarInput(document.getElementById('gas-km').value);
-        payload.litros = normalizarInput(document.getElementById('gas-litros').value);
-        payload.valor = normalizarInput(document.getElementById('gas-valor').value);
-        payload.tipoGasolina = document.getElementById('gas-tipo').value;
-        payload.local = document.getElementById('gas-local').value;
-      } else if (tipo === 'energia') {
-        const origDt = document.getElementById('elec-original-datahora').value;
-        payload.isEdit = !!origDt;
-        payload.originalDataHora = origDt;
-        payload.dataHora = document.getElementById('elec-datahora').value;
-        payload.placa = document.getElementById('elec-placa').value;
-        payload.percInicial = normalizarInput(document.getElementById('elec-pi').value);
-        payload.percFinal = normalizarInput(document.getElementById('elec-pf').value);
-        payload.kwa = normalizarInput(document.getElementById('elec-kwa').value);
-        payload.valor = normalizarInput(document.getElementById('elec-valor').value);
-        payload.local = document.getElementById('elec-local').value;
-        payload.academia = document.getElementById('elec-academia').checked;
-      } else if (tipo === 'veiculo') {
-        payload.placa = document.getElementById('veic-placa').value;
-        payload.marca = document.getElementById('veic-marca').value;
-        payload.modelo = document.getElementById('veic-modelo').value;
-      }
+          const payload = {
+            data_hora: dataHora,
+            data: data,
+            placa: document.getElementById('gas-placa').value,
+            km: normalizarInput(document.getElementById('gas-km').value),
+            litros: normalizarInput(document.getElementById('gas-litros').value),
+            valor: normalizarInput(document.getElementById('gas-valor').value),
+            tipo_gasolina: document.getElementById('gas-tipo').value,
+            local: document.getElementById('gas-local').value
+          };
 
-      const dataParam = encodeURIComponent(JSON.stringify(payload));
-      const scriptId = 'jsonp-salvar';
-      const antigo = document.getElementById(scriptId);
-      if (antigo) antigo.remove();
+          if (id) {
+            const { error } = await dbClient.from('abastecimentos').update(payload).eq('id', id);
+            if (error) throw error;
+          } else {
+            const { error } = await dbClient.from('abastecimentos').insert([payload]);
+            if (error) throw error;
+          }
+        } else if (tipo === 'energia') {
+          const id = document.getElementById('elec-id').value;
+          const dtIso = document.getElementById('elec-datahora').value;
+          const { data, dataHora } = formatarIsoParaDataPtBr(dtIso);
 
-      window._salvandoCallback = function(res) {
-        btn.disabled = false;
-        if (res && res.status === 'success') {
-          msg.style.color = "#4ade80";
-          msg.innerText = payload.isEdit ? "✓ Atualizado com sucesso!" : "✓ Salvo com sucesso!";
-          setTimeout(() => {
-            msg.innerText = "";
-            carregarDados();
-            if (tipo === 'gasolina') navigate('consultar-gas', 'Combustível', document.getElementById('btn-nav-gas'));
-            if (tipo === 'energia') navigate('consultar-elec', 'Recargas', document.getElementById('btn-nav-elec'));
-            if (tipo === 'veiculo') navigate('resumo', 'Resumo Geral', document.getElementById('btn-nav-resumo'));
-          }, 1200);
-        } else {
-          msg.style.color = "#ef4444";
-          msg.innerText = "Erro ao salvar na planilha.";
+          const payload = {
+            data_hora: dataHora,
+            data: data,
+            placa: document.getElementById('elec-placa').value,
+            perc_inicial: normalizarInput(document.getElementById('elec-pi').value),
+            perc_final: normalizarInput(document.getElementById('elec-pf').value),
+            kwa: normalizarInput(document.getElementById('elec-kwa').value),
+            valor: normalizarInput(document.getElementById('elec-valor').value),
+            local: document.getElementById('elec-local').value,
+            academia: document.getElementById('elec-academia').checked
+          };
+
+          if (id) {
+            const { error } = await dbClient.from('recargas').update(payload).eq('id', id);
+            if (error) throw error;
+          } else {
+            const { error } = await dbClient.from('recargas').insert([payload]);
+            if (error) throw error;
+          }
+        } else if (tipo === 'veiculo') {
+          const payload = {
+            placa: document.getElementById('veic-placa').value.trim().toUpperCase(),
+            marca: document.getElementById('veic-marca').value.trim(),
+            modelo: document.getElementById('veic-modelo').value.trim(),
+            foto: document.getElementById('veic-foto').value.trim()
+          };
+
+          const { error } = await dbClient.from('veiculos').upsert([payload]);
+          if (error) throw error;
         }
-      };
 
-      const s = document.createElement('script');
-      s.id = scriptId;
-      const sep = API_URL.includes('?') ? '&' : '?';
-      s.src = `${API_URL}${sep}action=salvar&data=${dataParam}&callback=confirmarGravacao&_=${Date.now()}`;
-      s.onerror = function() {
-        btn.disabled = false;
+        msg.style.color = "#4ade80";
+        msg.innerText = "✓ Salvo com sucesso!";
+        setTimeout(() => {
+          msg.innerText = "";
+          carregarDados();
+          if (tipo === 'gasolina') navigate('consultar-gas', 'Combustível', document.getElementById('btn-nav-gas'));
+          if (tipo === 'energia') navigate('consultar-elec', 'Recargas', document.getElementById('btn-nav-elec'));
+          if (tipo === 'veiculo') navigate('resumo', 'Resumo Geral', document.getElementById('btn-nav-resumo'));
+        }, 1000);
+      } catch (err) {
         msg.style.color = "#ef4444";
-        msg.innerText = "Erro ao conectar com a planilha.";
-      };
-      document.body.appendChild(s);
+        msg.innerText = "Erro: " + err.message;
+      } finally {
+        btn.disabled = false;
+      }
     }
 
-    function confirmarExclusao(tipo) {
-      if (!confirm("Deseja realmente excluir este registro permanentemente da planilha?")) return;
+    async function confirmarExclusao(tipo) {
+      if (!confirm("Deseja realmente excluir este registro permanentemente?")) return;
 
       const msg = document.getElementById('msg-' + tipo);
-      const origDt = tipo === 'gasolina' 
-        ? document.getElementById('gas-original-datahora').value 
-        : document.getElementById('elec-original-datahora').value;
-
-      if (!origDt) return;
-
       msg.style.color = "#ef4444";
       msg.innerText = "Excluindo registro...";
 
-      const payload = { tipo, originalDataHora: origDt };
-      const dataParam = encodeURIComponent(JSON.stringify(payload));
-      const scriptId = 'jsonp-excluir';
-      const antigo = document.getElementById(scriptId);
-      if (antigo) antigo.remove();
-
-      window._salvandoCallback = function(res) {
-        if (res && res.status === 'success') {
-          msg.innerText = "✓ Registro excluído!";
-          setTimeout(() => {
-            msg.innerText = "";
-            carregarDados();
-            if (tipo === 'gasolina') navigate('consultar-gas', 'Combustível', document.getElementById('btn-nav-gas'));
-            if (tipo === 'energia') navigate('consultar-elec', 'Recargas', document.getElementById('btn-nav-elec'));
-          }, 1200);
-        } else {
-          msg.innerText = "Erro ao excluir na planilha.";
+      try {
+        if (tipo === 'gasolina') {
+          const id = document.getElementById('gas-id').value;
+          const { error } = await dbClient.from('abastecimentos').delete().eq('id', id);
+          if (error) throw error;
+        } else if (tipo === 'energia') {
+          const id = document.getElementById('elec-id').value;
+          const { error } = await dbClient.from('recargas').delete().eq('id', id);
+          if (error) throw error;
         }
-      };
 
-      const s = document.createElement('script');
-      s.id = scriptId;
-      const sep = API_URL.includes('?') ? '&' : '?';
-      s.src = `${API_URL}${sep}action=excluir&data=${dataParam}&callback=confirmarGravacao&_=${Date.now()}`;
-      s.onerror = function() {
-        msg.innerText = "Erro de conexão ao excluir.";
-      };
-      document.body.appendChild(s);
+        msg.innerText = "✓ Registro excluído!";
+        setTimeout(() => {
+          msg.innerText = "";
+          carregarDados();
+          if (tipo === 'gasolina') navigate('consultar-gas', 'Combustível', document.getElementById('btn-nav-gas'));
+          if (tipo === 'energia') navigate('consultar-elec', 'Recargas', document.getElementById('btn-nav-elec'));
+        }, 1000);
+      } catch (err) {
+        msg.innerText = "Erro ao excluir: " + err.message;
+      }
     }
 
     const now = new Date();
