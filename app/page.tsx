@@ -114,7 +114,7 @@ export default function HomePage() {
 
     try {
       const { data, error } = await supabase
-        .from('usuarios_liberados')
+        .from('ge_usuarios_liberados')
         .select('*')
         .eq('email', email)
         .maybeSingle();
@@ -242,9 +242,9 @@ export default function HomePage() {
         setError(null);
 
         const [vRes, aRes, rRes] = await Promise.all([
-          supabase.from('veiculos').select('*').order('created_at', { ascending: false }),
-          supabase.from('abastecimentos').select('*').order('created_at', { ascending: false }),
-          supabase.from('recargas').select('*').order('created_at', { ascending: false }),
+          supabase.from('ge_veiculos').select('*').order('created_at', { ascending: false }),
+          supabase.from('ge_abastecimentos').select('*').order('created_at', { ascending: false }),
+          supabase.from('ge_recargas').select('*').order('created_at', { ascending: false }),
         ]);
 
         if (vRes.error) throw new Error(`Erro ao carregar veículos: ${vRes.error.message}`);
@@ -402,7 +402,7 @@ export default function HomePage() {
       if (currentEmail) updatePayload.user_email = currentEmail;
 
       const { error } = await supabase
-        .from('veiculos')
+        .from('ge_veiculos')
         .update(updatePayload)
         .eq('placa', data.placa as string);
       if (error) throw error;
@@ -417,7 +417,7 @@ export default function HomePage() {
         user_id: currentUserId,
       };
 
-      const { error } = await supabase.from('veiculos').insert([insertPayload]);
+      const { error } = await supabase.from('ge_veiculos').insert([insertPayload]);
       if (error) throw error;
       showToast('Veículo cadastrado na sua conta!');
     }
@@ -425,7 +425,7 @@ export default function HomePage() {
   };
 
   const handleDeleteVeiculo = async (placa: string) => {
-    const { error } = await supabase.from('veiculos').delete().eq('placa', placa);
+    const { error } = await supabase.from('ge_veiculos').delete().eq('placa', placa);
     if (error) throw error;
     if (selectedPlaca === placa) setSelectedPlaca(null);
     showToast(`Veículo ${placa} excluído.`);
@@ -451,7 +451,7 @@ export default function HomePage() {
       if (currentEmail) updatePayload.user_email = currentEmail;
 
       const { error } = await supabase
-        .from('abastecimentos')
+        .from('ge_abastecimentos')
         .update(updatePayload)
         .eq('id', data.id);
       if (error) throw error;
@@ -470,7 +470,7 @@ export default function HomePage() {
         user_id: currentUserId,
       };
 
-      const { error } = await supabase.from('abastecimentos').insert([insertPayload]);
+      const { error } = await supabase.from('ge_abastecimentos').insert([insertPayload]);
       if (error) throw error;
       showToast('Abastecimento registrado com sucesso!');
     }
@@ -478,7 +478,7 @@ export default function HomePage() {
   };
 
   const handleDeleteAbastecimento = async (id: string) => {
-    const { error } = await supabase.from('abastecimentos').delete().eq('id', id);
+    const { error } = await supabase.from('ge_abastecimentos').delete().eq('id', id);
     if (error) throw error;
     showToast('Abastecimento excluído.');
     await fetchData(true);
@@ -504,7 +504,7 @@ export default function HomePage() {
       if (currentEmail) updatePayload.user_email = currentEmail;
 
       const { error } = await supabase
-        .from('recargas')
+        .from('ge_recargas')
         .update(updatePayload)
         .eq('id', data.id);
       if (error) throw error;
@@ -524,7 +524,7 @@ export default function HomePage() {
         user_id: currentUserId,
       };
 
-      const { error } = await supabase.from('recargas').insert([insertPayload]);
+      const { error } = await supabase.from('ge_recargas').insert([insertPayload]);
       if (error) throw error;
       showToast('Recarga registrada com sucesso!');
     }
@@ -532,7 +532,7 @@ export default function HomePage() {
   };
 
   const handleDeleteRecarga = async (id: string) => {
-    const { error } = await supabase.from('recargas').delete().eq('id', id);
+    const { error } = await supabase.from('ge_recargas').delete().eq('id', id);
     if (error) throw error;
     showToast('Recarga excluída.');
     await fetchData(true);

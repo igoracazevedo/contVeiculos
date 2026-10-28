@@ -56,22 +56,22 @@ export interface Recarga {
 export interface Database {
   public: {
     Tables: {
-      veiculos: {
+      ge_veiculos: {
         Row: Veiculo;
         Insert: Partial<Veiculo>;
         Update: Partial<Veiculo>;
       };
-      abastecimentos: {
+      ge_abastecimentos: {
         Row: Abastecimento;
         Insert: Partial<Abastecimento>;
         Update: Partial<Abastecimento>;
       };
-      recargas: {
+      ge_recargas: {
         Row: Recarga;
         Insert: Partial<Recarga>;
         Update: Partial<Recarga>;
       };
-      usuarios_liberados: {
+      ge_usuarios_liberados: {
         Row: UsuarioLiberado;
         Insert: Partial<UsuarioLiberado>;
         Update: Partial<UsuarioLiberado>;

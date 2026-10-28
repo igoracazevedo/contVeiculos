@@ -58,7 +58,7 @@ export function GerenciarUsuariosModal({
       setLoading(true);
       setError(null);
       const { data, error } = await supabase
-        .from('usuarios_liberados')
+        .from('ge_usuarios_liberados')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -137,7 +137,7 @@ export function GerenciarUsuariosModal({
       if (editingId) {
         // Atualizar
         const { error } = await supabase
-          .from('usuarios_liberados')
+          .from('ge_usuarios_liberados')
           .update({
             email: cleanEmail,
             nome: formNome.trim() || null,
@@ -151,7 +151,7 @@ export function GerenciarUsuariosModal({
         if (error) throw error;
       } else {
         // Inserir novo
-        const { error } = await supabase.from('usuarios_liberados').insert([
+        const { error } = await supabase.from('ge_usuarios_liberados').insert([
           {
             email: cleanEmail,
             nome: formNome.trim() || null,
@@ -178,7 +178,7 @@ export function GerenciarUsuariosModal({
   const handleToggleActive = async (u: UsuarioLiberado) => {
     try {
       const { error } = await supabase
-        .from('usuarios_liberados')
+        .from('ge_usuarios_liberados')
         .update({ ativo: !u.ativo })
         .eq('id', u.id);
 
@@ -195,7 +195,7 @@ export function GerenciarUsuariosModal({
     if (!userToDelete) return;
     try {
       const { error } = await supabase
-        .from('usuarios_liberados')
+        .from('ge_usuarios_liberados')
         .delete()
         .eq('id', userToDelete.id);
 

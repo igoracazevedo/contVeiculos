@@ -56,31 +56,71 @@ export function AccessBlockedScreen({
 
   const copySqlScript = () => {
     const sql = `-- Script de Atualização: Tabela de Usuários Liberados
-CREATE TABLE IF NOT EXISTS public.usuarios_liberados (
+CREATE TABLE IF NOT EXISTS public.ge_usuarios_liberados (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT UNIQUE NOT NULL,
   nome TEXT,
   data_inicio DATE NOT NULL DEFAULT CURRENT_DATE,
-  data_fim DATE NOT NULL DEFAULT (CURRENT_DATE + INTERVAL '1 year'),
+  data_fim DATE NOT NULL DEFAULT (CURRENT_DATE + INTERVAL '10 years'),
   ativo BOOLEAN NOT NULL DEFAULT true,
   role TEXT NOT NULL DEFAULT 'usuario',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-ALTER TABLE public.veiculos ADD COLUMN IF NOT EXISTS user_id UUID;
-ALTER TABLE public.veiculos ADD COLUMN IF NOT EXISTS user_email TEXT;
-ALTER TABLE public.abastecimentos ADD COLUMN IF NOT EXISTS user_id UUID;
-ALTER TABLE public.abastecimentos ADD COLUMN IF NOT EXISTS user_email TEXT;
-ALTER TABLE public.recargas ADD COLUMN IF NOT EXISTS user_id UUID;
-ALTER TABLE public.recargas ADD COLUMN IF NOT EXISTS user_email TEXT;
+CREATE TABLE IF NOT EXISTS public.ge_veiculos (
+  placa TEXT PRIMARY KEY,
+  marca TEXT NOT NULL,
+  modelo TEXT NOT NULL,
+  foto TEXT,
+  user_id UUID,
+  user_email TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
-INSERT INTO public.usuarios_liberados (email, nome, data_inicio, data_fim, ativo, role)
+CREATE TABLE IF NOT EXISTS public.ge_abastecimentos (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  data_hora TEXT NOT NULL,
+  data TEXT NOT NULL,
+  placa TEXT NOT NULL REFERENCES public.ge_veiculos(placa) ON DELETE CASCADE,
+  km NUMERIC NOT NULL,
+  litros NUMERIC NOT NULL,
+  valor NUMERIC NOT NULL,
+  tipo_gasolina TEXT NOT NULL DEFAULT 'COMUM',
+  local TEXT,
+  user_id UUID,
+  user_email TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.ge_recargas (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  data_hora TEXT NOT NULL,
+  data TEXT NOT NULL,
+  placa TEXT NOT NULL REFERENCES public.ge_veiculos(placa) ON DELETE CASCADE,
+  perc_inicial NUMERIC NOT NULL,
+  perc_final NUMERIC NOT NULL,
+  kwa NUMERIC NOT NULL,
+  valor NUMERIC NOT NULL,
+  local TEXT,
+  academia BOOLEAN NOT NULL DEFAULT false,
+  user_id UUID,
+  user_email TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+INSERT INTO public.ge_usuarios_liberados (email, nome, data_inicio, data_fim, ativo, role)
 VALUES ('${userEmail}', '${userName || 'Administrador'}', CURRENT_DATE, (CURRENT_DATE + INTERVAL '10 years'), true, 'admin')
 ON CONFLICT (email) DO UPDATE SET role = 'admin', ativo = true;
 
-ALTER TABLE public.usuarios_liberados ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Leitura de usuarios_liberados" ON public.usuarios_liberados FOR SELECT TO authenticated, anon USING (true);
-CREATE POLICY "Admins gerenciam usuarios_liberados" ON public.usuarios_liberados FOR ALL TO authenticated USING (true);
+ALTER TABLE public.ge_veiculos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ge_abastecimentos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ge_recargas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ge_usuarios_liberados ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Acesso ge_veiculos" ON public.ge_veiculos FOR ALL USING (true);
+CREATE POLICY "Acesso ge_abastecimentos" ON public.ge_abastecimentos FOR ALL USING (true);
+CREATE POLICY "Acesso ge_recargas" ON public.ge_recargas FOR ALL USING (true);
+CREATE POLICY "Acesso ge_usuarios_liberados" ON public.ge_usuarios_liberados FOR ALL USING (true);
 `;
     navigator.clipboard.writeText(sql);
     setCopiedSql(true);
