@@ -6,6 +6,15 @@ Aplicação **mobile-first** desenvolvida com **Next.js (App Router)**, **TypeSc
 
 ## ⚡ Funcionalidades
 
+- **🔐 Autenticação com Google (OAuth)**: login seguro utilizando contas Google via Supabase Auth.
+- **🛡️ Controle de Acesso por Usuários Liberados (Whitelist)**:
+  - Sistema de permissão onde apenas contas Google autorizadas conseguem acessar.
+  - Período de vigência configurável com **Data de Início** e **Data de Término**.
+  - Status de liberação em tempo real (Ativo, Inativo, Agendado ou Expirado).
+  - Painel exclusivo para Administradores gerenciarem a lista de usuários autorizados diretamente pelo app.
+- **👤 Cadastros Independentes por Usuário (Multi-tenant)**:
+  - Cada usuário logado cadastra e visualiza seus próprios veículos, abastecimentos e recargas.
+  - Administradores contam com alternador de exibição ("Meus Registros" vs "Todos os Registros").
 - **Dashboard Geral**: visão consolidada dos veículos, fotos, média de consumo geral em km/l e total acumulado (Gasolina + Energia).
 - **Controle de Abastecimentos**:
   - Cálculo automático de preço por litro (`R$/L`).
@@ -26,6 +35,20 @@ Aplicação **mobile-first** desenvolvida com **Next.js (App Router)**, **TypeSc
   - **Nível 3**: Cards com detalhes completos e ações de edição e exclusão.
 - **CRUD Completo com Confirmação**: Veículos, Abastecimentos e Recargas.
 - **Tema Escuro Moderno**: paleta em tons `slate-950`, `slate-900`, `sky-400` e `emerald-400`.
+
+---
+
+## 🗄️ Configuração do Banco de Dados (Supabase)
+
+Para habilitar a tabela de usuários liberados e isolamento por usuário:
+
+1. Acesse o **[Supabase Dashboard](https://supabase.com/dashboard)** do seu projeto.
+2. Vá em **SQL Editor** > **New Query**.
+3. Abra e execute o arquivo [`supabase/schema_auth_users.sql`](./supabase/schema_auth_users.sql) deste repositório.
+4. Para o login com Google:
+   - No Supabase, vá em **Authentication** > **Providers** > **Google**.
+   - Habilite o provedor Google e informe o **Client ID** e **Client Secret** obtidos no Google Cloud Console.
+   - Adicione a URL de redirecionamento do Supabase nas URLs autorizadas no Google Cloud Console.
 
 ---
 
