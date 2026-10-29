@@ -45,32 +45,45 @@ export function FormAbastecimento({
   const [error, setError] = useState<string | null>(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
+  // Rastreamento para não perder dados digitados quando a janela/celular perde o foco
+  const prevOpenRef = React.useRef(false);
+  const editingIdRef = React.useRef<string | null>(null);
+
   useEffect(() => {
-    if (abastecimentoToEdit) {
-      setPlaca(abastecimentoToEdit.placa);
-      setDataHora(dateToInputDateTime(abastecimentoToEdit.data_hora || abastecimentoToEdit.data));
-      setKm(String(abastecimentoToEdit.km || ''));
-      setLitros(String(abastecimentoToEdit.litros || ''));
-      setValorMasked(
-        abastecimentoToEdit.valor !== undefined && abastecimentoToEdit.valor !== null
-          ? formatCurrencyMask(Math.round(abastecimentoToEdit.valor * 100))
-          : ''
-      );
-      setTipoGasolina(abastecimentoToEdit.tipo_gasolina || 'COMUM');
-      setLocal(abastecimentoToEdit.local || '');
-    } else {
-      const initialPlaca = defaultPlaca || (veiculos.length > 0 ? veiculos[0].placa : '');
-      setPlaca(initialPlaca);
-      setDataHora(dateToInputDateTime(new Date().toISOString()));
-      setKm('');
-      setLitros('');
-      setValorMasked('0,00');
-      setTipoGasolina('COMUM');
-      setLocal('');
+    const justOpened = isOpen && !prevOpenRef.current;
+    const editingChanged = (abastecimentoToEdit?.id || null) !== editingIdRef.current;
+    prevOpenRef.current = isOpen;
+
+    if (!isOpen) return;
+
+    if (justOpened || editingChanged) {
+      editingIdRef.current = abastecimentoToEdit?.id || null;
+      if (abastecimentoToEdit) {
+        setPlaca(abastecimentoToEdit.placa);
+        setDataHora(dateToInputDateTime(abastecimentoToEdit.data_hora || abastecimentoToEdit.data));
+        setKm(String(abastecimentoToEdit.km || ''));
+        setLitros(String(abastecimentoToEdit.litros || ''));
+        setValorMasked(
+          abastecimentoToEdit.valor !== undefined && abastecimentoToEdit.valor !== null
+            ? formatCurrencyMask(Math.round(abastecimentoToEdit.valor * 100))
+            : ''
+        );
+        setTipoGasolina(abastecimentoToEdit.tipo_gasolina || 'COMUM');
+        setLocal(abastecimentoToEdit.local || '');
+      } else {
+        const initialPlaca = defaultPlaca || (veiculos.length > 0 ? veiculos[0].placa : '');
+        setPlaca(initialPlaca);
+        setDataHora(dateToInputDateTime(new Date().toISOString()));
+        setKm('');
+        setLitros('');
+        setValorMasked('0,00');
+        setTipoGasolina('COMUM');
+        setLocal('');
+      }
+      setError(null);
+      setShowConfirmDelete(false);
     }
-    setError(null);
-    setShowConfirmDelete(false);
-  }, [abastecimentoToEdit, isOpen, defaultPlaca, veiculos]);
+  }, [abastecimentoToEdit, isOpen]);
 
   if (!isOpen) return null;
 

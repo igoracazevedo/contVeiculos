@@ -118,7 +118,7 @@ export default function HomePage() {
       const savedTheme = localStorage.getItem('iaz_theme');
       if (savedTheme === 'dark') {
         setIsDark(true);
-        document.documentElement.classList.add('dark-theme');
+        document.documentElement.classList.add('dark', 'dark-theme');
       }
       const savedHide = localStorage.getItem('iaz_hide_values');
       if (savedHide === 'true') {
@@ -131,10 +131,10 @@ export default function HomePage() {
     const nextDark = !isDark;
     setIsDark(nextDark);
     if (nextDark) {
-      document.documentElement.classList.add('dark-theme');
+      document.documentElement.classList.add('dark', 'dark-theme');
       localStorage.setItem('iaz_theme', 'dark');
     } else {
-      document.documentElement.classList.remove('dark-theme');
+      document.documentElement.classList.remove('dark', 'dark-theme');
       localStorage.setItem('iaz_theme', 'light');
     }
   };
@@ -161,17 +161,23 @@ export default function HomePage() {
     );
   }, [sessionUser, whitelistData]);
 
+  // Prevenção de perda de foco e reinicialização de modais
+  const hasInitialAuthLoadedRef = React.useRef(false);
+
   // Checagem de Autenticação e Whitelist de Usuários
   const checkAuthAndWhitelist = useCallback(async (user: any) => {
     if (!user) {
       setSessionUser(null);
       setWhitelistStatus('checking');
       setAuthLoading(false);
+      hasInitialAuthLoadedRef.current = false;
       return;
     }
 
     setSessionUser(user);
-    setAuthLoading(true);
+    if (!hasInitialAuthLoadedRef.current) {
+      setAuthLoading(true);
+    }
 
     const email = user.email?.toLowerCase();
     const isMasterAdmin = email === 'igoracazevedo@gmail.com';
@@ -200,6 +206,7 @@ export default function HomePage() {
               ativo: true,
               role: 'admin',
             });
+            hasInitialAuthLoadedRef.current = true;
             setAuthLoading(false);
             return;
           } else {
@@ -223,6 +230,7 @@ export default function HomePage() {
             ativo: true,
             role: 'admin',
           });
+          hasInitialAuthLoadedRef.current = true;
           setAuthLoading(false);
           return;
         }
@@ -255,12 +263,14 @@ export default function HomePage() {
       } else {
         setWhitelistStatus('authorized');
         setWhitelistData(data);
+        hasInitialAuthLoadedRef.current = true;
         setAuthLoading(false);
       }
     } catch (err: any) {
       console.error('Erro ao verificar usuário liberado:', err);
       if (isMasterAdmin) {
         setWhitelistStatus('authorized');
+        hasInitialAuthLoadedRef.current = true;
       } else {
         setWhitelistStatus('unauthorized');
       }
@@ -279,8 +289,12 @@ export default function HomePage() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (mounted) {
+        // Ignorar eventos de atualização silenciosa de token ao alternar abas/foco no navegador
+        if (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+          return;
+        }
         checkAuthAndWhitelist(session?.user ?? null);
       }
     });
@@ -297,7 +311,8 @@ export default function HomePage() {
       if (!sessionUser) return;
 
       try {
-        if (!isSilent) setLoading(true);
+        // Se já temos veículos carregados, não exibir skeleton de tela inteira
+        if (!isSilent && veiculos.length === 0) setLoading(true);
         setError(null);
 
         const [vRes, aRes, rRes] = await Promise.all([
@@ -370,6 +385,27 @@ export default function HomePage() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     window.location.reload();
+  };
+
+  // Carregar e persistir o último veículo selecionado no localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined' && veiculos.length > 0) {
+      const savedPlaca = localStorage.getItem('iaz_selected_placa');
+      if (savedPlaca && veiculos.some((v) => v.placa === savedPlaca)) {
+        setSelectedPlaca(savedPlaca);
+      }
+    }
+  }, [veiculos]);
+
+  const handleSelectPlaca = (placa: string | null) => {
+    setSelectedPlaca(placa);
+    if (typeof window !== 'undefined') {
+      if (placa) {
+        localStorage.setItem('iaz_selected_placa', placa);
+      } else {
+        localStorage.removeItem('iaz_selected_placa');
+      }
+    }
   };
 
   // Determinar se o menu Academia deve aparecer:
@@ -1092,34 +1128,42 @@ export default function HomePage() {
           </div>
 
           {/* =========================================================================
-              FILTRO DE VEÍCULOS (Barra Horizontal)
+              COMBOBOX DE SELEÇÃO DE VEÍCULO (Substitui barra e memoriza último veículo)
              ========================================================================= */}
           {veiculos.length > 0 && (
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-              <button
-                onClick={() => setSelectedPlaca(null)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                  selectedPlaca === null
-                    ? 'bg-[#ff6200] text-white shadow-sm'
-                    : 'bg-white dark:bg-[#151f32] text-slate-600 dark:text-slate-400 border border-slate-200/80 dark:border-[#293548] hover:border-slate-300'
-                }`}
-              >
-                Todos os Veículos ({veiculos.length})
-              </button>
-              {veiculos.map((v) => (
-                <button
-                  key={v.placa}
-                  onClick={() => setSelectedPlaca(v.placa === selectedPlaca ? null : v.placa)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all ${
-                    selectedPlaca === v.placa
-                      ? 'bg-[#ff6200] text-white shadow-sm'
-                      : 'bg-white dark:bg-[#151f32] text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-[#293548] hover:border-slate-300'
-                  }`}
+            <div className="iaz-card p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-orange-500/10 text-[#ff6200] flex-shrink-0">
+                  <Car className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider block">
+                    Filtrar por Veículo
+                  </span>
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    {selectedPlaca
+                      ? `${selectedPlaca} • ${
+                          veiculos.find((v) => v.placa === selectedPlaca)?.modelo || ''
+                        }`
+                      : `Frota Completa (${veiculos.length} veículos)`}
+                  </span>
+                </div>
+              </div>
+
+              <div className="w-full sm:w-auto">
+                <select
+                  value={selectedPlaca || ''}
+                  onChange={(e) => handleSelectPlaca(e.target.value ? e.target.value : null)}
+                  className="w-full sm:min-w-[240px] px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-white dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#ff6200] cursor-pointer shadow-2xs"
                 >
-                  <span className="font-mono">{v.placa}</span>
-                  <span className="text-[10px] opacity-80 truncate max-w-[80px]">{v.modelo}</span>
-                </button>
-              ))}
+                  <option value="">🚗 Todos os Veículos ({veiculos.length})</option>
+                  {veiculos.map((v) => (
+                    <option key={v.placa} value={v.placa}>
+                      {v.placa} • {v.marca} {v.modelo}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           )}
 
@@ -1289,27 +1333,26 @@ export default function HomePage() {
                         </button>
                       </div>
                     ) : (
-                      veiculos
-                        .filter((v) => !selectedPlaca || v.placa === selectedPlaca)
-                        .slice(0, 1)
-                        .map((v) => (
-                          <CarCard
-                            key={v.placa}
-                            veiculo={v}
-                            abastecimentos={abastecimentos}
-                            recargas={recargas}
-                            isSelected={selectedPlaca === v.placa}
-                            onSelect={() =>
-                              setSelectedPlaca(selectedPlaca === v.placa ? null : v.placa)
-                            }
-                            onEdit={(veic) => {
-                              setVehicleToEdit(veic);
-                              setIsVehicleModalOpen(true);
-                            }}
-                            onDelete={handleDeleteVeiculo}
-                            hideValues={hideValues}
-                          />
-                        ))
+                      <div className="space-y-3">
+                        {veiculos
+                          .filter((v) => !selectedPlaca || v.placa === selectedPlaca)
+                          .map((v) => (
+                            <CarCard
+                              key={v.placa}
+                              veiculo={v}
+                              abastecimentos={abastecimentos}
+                              recargas={recargas}
+                              isSelected={selectedPlaca === v.placa}
+                              onSelect={() => handleSelectPlaca(v.placa)}
+                              onEdit={(veic) => {
+                                setVehicleToEdit(veic);
+                                setIsVehicleModalOpen(true);
+                              }}
+                              onDelete={handleDeleteVeiculo}
+                              hideValues={hideValues}
+                            />
+                          ))}
+                      </div>
                     )}
                   </div>
 

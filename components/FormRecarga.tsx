@@ -56,34 +56,47 @@ export function FormRecarga({
   const [error, setError] = useState<string | null>(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
+  // Rastreamento para não perder dados digitados quando a janela/celular perde o foco
+  const prevOpenRef = React.useRef(false);
+  const editingIdRef = React.useRef<string | null>(null);
+
   useEffect(() => {
-    if (recargaToEdit) {
-      setPlaca(recargaToEdit.placa);
-      setDataHora(dateToInputDateTime(recargaToEdit.data_hora || recargaToEdit.data));
-      setPercInicial(String(recargaToEdit.perc_inicial ?? ''));
-      setPercFinal(String(recargaToEdit.perc_final ?? ''));
-      setKwa(String(recargaToEdit.kwa ?? ''));
-      setValorMasked(
-        recargaToEdit.valor !== undefined && recargaToEdit.valor !== null
-          ? formatCurrencyMask(Math.round(recargaToEdit.valor * 100))
-          : ''
-      );
-      setLocal(recargaToEdit.local || '');
-      setAcademia(Boolean(recargaToEdit.academia));
-    } else {
-      const initialPlaca = defaultPlaca || (veiculos.length > 0 ? veiculos[0].placa : '');
-      setPlaca(initialPlaca);
-      setDataHora(dateToInputDateTime(new Date().toISOString()));
-      setPercInicial('20');
-      setPercFinal('100');
-      setKwa('');
-      setValorMasked('0,00');
-      setLocal('');
-      setAcademia(false);
+    const justOpened = isOpen && !prevOpenRef.current;
+    const editingChanged = (recargaToEdit?.id || null) !== editingIdRef.current;
+    prevOpenRef.current = isOpen;
+
+    if (!isOpen) return;
+
+    if (justOpened || editingChanged) {
+      editingIdRef.current = recargaToEdit?.id || null;
+      if (recargaToEdit) {
+        setPlaca(recargaToEdit.placa);
+        setDataHora(dateToInputDateTime(recargaToEdit.data_hora || recargaToEdit.data));
+        setPercInicial(String(recargaToEdit.perc_inicial ?? ''));
+        setPercFinal(String(recargaToEdit.perc_final ?? ''));
+        setKwa(String(recargaToEdit.kwa ?? ''));
+        setValorMasked(
+          recargaToEdit.valor !== undefined && recargaToEdit.valor !== null
+            ? formatCurrencyMask(Math.round(recargaToEdit.valor * 100))
+            : ''
+        );
+        setLocal(recargaToEdit.local || '');
+        setAcademia(Boolean(recargaToEdit.academia));
+      } else {
+        const initialPlaca = defaultPlaca || (veiculos.length > 0 ? veiculos[0].placa : '');
+        setPlaca(initialPlaca);
+        setDataHora(dateToInputDateTime(new Date().toISOString()));
+        setPercInicial('20');
+        setPercFinal('100');
+        setKwa('');
+        setValorMasked('0,00');
+        setLocal('');
+        setAcademia(false);
+      }
+      setError(null);
+      setShowConfirmDelete(false);
     }
-    setError(null);
-    setShowConfirmDelete(false);
-  }, [recargaToEdit, isOpen, defaultPlaca, veiculos]);
+  }, [recargaToEdit, isOpen]);
 
   if (!isOpen) return null;
 

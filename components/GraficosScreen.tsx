@@ -286,7 +286,7 @@ export function GraficosScreen({
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-bold text-slate-900">
+          <div className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
             {hideValues ? '••••' : formatCurrency(totals.tot)}
           </div>
           <p className="text-[10px] text-slate-500">
@@ -304,7 +304,7 @@ export function GraficosScreen({
               <Fuel className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-bold text-slate-900">
+          <div className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
             {hideValues ? '••••' : formatCurrency(totals.gas)}
           </div>
           <div className="flex items-center justify-between text-[11px] text-slate-500">
@@ -325,7 +325,7 @@ export function GraficosScreen({
               <Zap className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-bold text-slate-900">
+          <div className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
             {hideValues ? '••••' : formatCurrency(totals.ene)}
           </div>
           <div className="flex items-center justify-between text-[11px] text-slate-500">
@@ -345,7 +345,7 @@ export function GraficosScreen({
               <BarChart3 className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-900">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 {selectedMetric === 'valor'
                   ? 'Evolução Mensal de Gastos (R$)'
                   : 'Consumo Mensal (Litros vs kWh)'}
@@ -391,7 +391,7 @@ export function GraficosScreen({
                   className="p-3 rounded-2xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 space-y-2 hover:border-[#ff6200]/40 transition-colors"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-extrabold text-slate-900">{m.label}</span>
+                    <span className="text-xs font-extrabold text-slate-900 dark:text-slate-100">{m.label}</span>
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                       {hideValues ? '••••' : formatCurrency(m.totalGasto)}
                     </span>

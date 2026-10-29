@@ -83,7 +83,10 @@ export function CarCard({
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
         {/* Placa Mercosul Badge */}
-        <div className="absolute top-3 left-3 bg-white text-slate-900 px-2.5 py-0.5 rounded-lg shadow border border-slate-300 text-xs font-black tracking-widest font-mono uppercase flex items-center gap-1.5">
+        <div
+          className="absolute top-3 left-3 bg-white text-slate-950 px-2.5 py-0.5 rounded-lg shadow border border-slate-300 text-xs font-black tracking-widest font-mono uppercase flex items-center gap-1.5 z-10 select-none"
+          style={{ color: '#020617' }}
+        >
           <span className="w-2 h-2 rounded-full bg-blue-600 inline-block" />
           {veiculo.placa}
         </div>

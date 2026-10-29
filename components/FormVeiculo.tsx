@@ -51,24 +51,37 @@ export function FormVeiculo({
   const [publicPhotos, setPublicPhotos] = useState<PublicPhotoResult[]>([]);
   const [showPhotoPicker, setShowPhotoPicker] = useState(false);
 
+  // Rastreamento para não perder dados digitados quando a janela/celular perde o foco
+  const prevOpenRef = React.useRef(false);
+  const editingPlacaRef = React.useRef<string | null>(null);
+
   useEffect(() => {
-    if (veiculoToEdit) {
-      setPlaca(veiculoToEdit.placa);
-      setMarca(veiculoToEdit.marca);
-      setModelo(veiculoToEdit.modelo);
-      setFoto(veiculoToEdit.foto || '');
-      setTemAcademia(Boolean(veiculoToEdit.tem_academia));
-    } else {
-      setPlaca('');
-      setMarca('');
-      setModelo('');
-      setFoto('');
-      setTemAcademia(false);
+    const justOpened = isOpen && !prevOpenRef.current;
+    const editingChanged = (veiculoToEdit?.placa || null) !== editingPlacaRef.current;
+    prevOpenRef.current = isOpen;
+
+    if (!isOpen) return;
+
+    if (justOpened || editingChanged) {
+      editingPlacaRef.current = veiculoToEdit?.placa || null;
+      if (veiculoToEdit) {
+        setPlaca(veiculoToEdit.placa);
+        setMarca(veiculoToEdit.marca);
+        setModelo(veiculoToEdit.modelo);
+        setFoto(veiculoToEdit.foto || '');
+        setTemAcademia(Boolean(veiculoToEdit.tem_academia));
+      } else {
+        setPlaca('');
+        setMarca('');
+        setModelo('');
+        setFoto('');
+        setTemAcademia(false);
+      }
+      setError(null);
+      setShowConfirmDelete(false);
+      setPublicPhotos([]);
+      setShowPhotoPicker(false);
     }
-    setError(null);
-    setShowConfirmDelete(false);
-    setPublicPhotos([]);
-    setShowPhotoPicker(false);
   }, [veiculoToEdit, isOpen]);
 
   if (!isOpen) return null;
@@ -202,6 +215,7 @@ export function FormVeiculo({
                 src={displayPhoto}
                 alt="Foto do veículo"
                 className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = getDefaultVehiclePhoto(marca, modelo);
                 }}
@@ -258,10 +272,18 @@ export function FormVeiculo({
                       key={idx}
                       type="button"
                       onClick={() => handleSelectPublicPhoto(p.url)}
-                      className="group relative h-16 rounded-xl overflow-hidden border border-slate-300 dark:border-slate-700 hover:border-[#ff6200] focus:ring-2 focus:ring-[#ff6200] transition-all"
+                      className="group relative h-16 rounded-xl overflow-hidden border border-slate-300 dark:border-slate-700 hover:border-[#ff6200] focus:ring-2 focus:ring-[#ff6200] transition-all bg-slate-100 dark:bg-slate-800"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={p.url} alt={p.title} className="w-full h-full object-cover" />
+                      <img
+                        src={p.url}
+                        alt={p.title}
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = getDefaultVehiclePhoto(marca, modelo);
+                        }}
+                      />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                         <Check className="w-4 h-4 text-white" />
                       </div>
