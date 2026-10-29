@@ -17,11 +17,11 @@ export function LoginScreen({ errorMessage }: LoginScreenProps) {
       setLoading(true);
       setError(null);
 
-      // Determinar a URL de redirecionamento correta (seja localhost ou GitHub Pages)
+      // Determinar a URL de redirecionamento correta (Vercel ou localhost)
       const redirectUrl =
         typeof window !== 'undefined'
-          ? window.location.origin + window.location.pathname
-          : undefined;
+          ? window.location.origin
+          : 'https://iaz-gas-energia.vercel.app';
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
