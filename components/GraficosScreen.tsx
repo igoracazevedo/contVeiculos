@@ -3,7 +3,16 @@
 import React, { useMemo, useState } from 'react';
 import { Abastecimento, Recarga, Veiculo } from '@/types/database';
 import { formatCurrency, formatNumber, parseDate, getMonthName } from '@/lib/utils';
-import { Fuel, Zap, TrendingUp, BarChart3, Calendar, ArrowUpRight } from 'lucide-react';
+import {
+  Fuel,
+  Zap,
+  TrendingUp,
+  BarChart3,
+  Calendar,
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
+  ArrowUpDown,
+} from 'lucide-react';
 
 interface GraficosScreenProps {
   abastecimentos: Abastecimento[];
@@ -35,6 +44,7 @@ export function GraficosScreen({
 }: GraficosScreenProps) {
   const [selectedMetric, setSelectedMetric] = useState<'valor' | 'volume'>('valor');
   const [selectedYear, setSelectedYear] = useState<number | 'todos'>('todos');
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc'); // Padrão: decrescente por data
 
   // Filtragem inicial por placa
   const filteredAbastecimentos = useMemo(() => {
@@ -127,11 +137,21 @@ export function GraficosScreen({
     return Array.from(set).sort((a, b) => b - a);
   }, [monthlyData]);
 
-  // Filtrar pelo ano selecionado
+  // Filtrar pelo ano selecionado e aplicar ordenação (decrescente padrão ou crescente)
   const displayedMonths = useMemo(() => {
-    if (selectedYear === 'todos') return monthlyData;
-    return monthlyData.filter((m) => m.year === selectedYear);
-  }, [monthlyData, selectedYear]);
+    let list =
+      selectedYear === 'todos'
+        ? [...monthlyData]
+        : monthlyData.filter((m) => m.year === selectedYear);
+
+    list.sort((a, b) => {
+      const valA = a.year * 100 + a.month;
+      const valB = b.year * 100 + b.month;
+      return sortOrder === 'desc' ? valB - valA : valA - valB;
+    });
+
+    return list;
+  }, [monthlyData, selectedYear, sortOrder]);
 
   // Máximos para cálculo proporcional das barras
   const maxGasto = useMemo(() => {
@@ -176,7 +196,7 @@ export function GraficosScreen({
   return (
     <div className="space-y-4">
       {/* Barra de Filtros e Controles */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2.5">
         {/* Alternador de Métrica (R$ vs Litros/kWh) */}
         <div className="flex bg-slate-200/70 dark:bg-slate-800 p-0.5 rounded-xl border border-slate-300/60 dark:border-slate-700 text-xs">
           <button
@@ -201,26 +221,57 @@ export function GraficosScreen({
           </button>
         </div>
 
-        {/* Filtro de Ano */}
-        {availableYears.length > 0 && (
-          <div className="flex items-center gap-1.5 text-xs">
-            <Calendar className="w-3.5 h-3.5 text-slate-500" />
-            <select
-              value={selectedYear}
-              onChange={(e) =>
-                setSelectedYear(e.target.value === 'todos' ? 'todos' : Number(e.target.value))
-              }
-              className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1 text-slate-800 dark:text-slate-200 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#ff6200]"
+        {/* Controles de Filtro de Ano e Ordenação de Data */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Botão de Ordenação de Data (Decrescente / Crescente) */}
+          <div className="flex bg-white dark:bg-slate-800 p-0.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+            <button
+              onClick={() => setSortOrder('desc')}
+              className={`px-2.5 py-1.5 rounded-lg font-bold flex items-center gap-1 transition-all ${
+                sortOrder === 'desc'
+                  ? 'bg-[#ff6200] text-white shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+              title="Mais recentes primeiro (padrão)"
             >
-              <option value="todos">Todos os Anos</option>
-              {availableYears.map((yr) => (
-                <option key={yr} value={yr}>
-                  Ano {yr}
-                </option>
-              ))}
-            </select>
+              <ArrowDownWideNarrow className="w-3.5 h-3.5" />
+              <span>Mais Recentes</span>
+            </button>
+            <button
+              onClick={() => setSortOrder('asc')}
+              className={`px-2.5 py-1.5 rounded-lg font-bold flex items-center gap-1 transition-all ${
+                sortOrder === 'asc'
+                  ? 'bg-[#ff6200] text-white shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+              title="Mais antigos primeiro"
+            >
+              <ArrowUpNarrowWide className="w-3.5 h-3.5" />
+              <span>Mais Antigos</span>
+            </button>
           </div>
-        )}
+
+          {/* Filtro de Ano */}
+          {availableYears.length > 0 && (
+            <div className="flex items-center gap-1.5 text-xs">
+              <Calendar className="w-3.5 h-3.5 text-slate-500" />
+              <select
+                value={selectedYear}
+                onChange={(e) =>
+                  setSelectedYear(e.target.value === 'todos' ? 'todos' : Number(e.target.value))
+                }
+                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1 text-slate-800 dark:text-slate-200 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#ff6200]"
+              >
+                <option value="todos">Todos os Anos</option>
+                {availableYears.map((yr) => (
+                  <option key={yr} value={yr}>
+                    Ano {yr}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Cards de Resumo Agregado */}
@@ -409,7 +460,20 @@ export function GraficosScreen({
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-800 text-[10px] text-slate-500 uppercase tracking-wider">
-                  <th className="pb-2 font-bold">Mês/Ano</th>
+                  <th
+                    className="pb-2 font-bold cursor-pointer hover:text-[#ff6200] transition-colors"
+                    onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
+                    title="Alternar ordenação"
+                  >
+                    <span className="flex items-center gap-1">
+                      Mês/Ano
+                      {sortOrder === 'desc' ? (
+                        <ArrowDownWideNarrow className="w-3 h-3 text-[#ff6200]" />
+                      ) : (
+                        <ArrowUpNarrowWide className="w-3 h-3 text-[#ff6200]" />
+                      )}
+                    </span>
+                  </th>
                   <th className="pb-2 font-bold text-right">Gasolina (R$)</th>
                   <th className="pb-2 font-bold text-right">Litros</th>
                   <th className="pb-2 font-bold text-right">Energia (R$)</th>
