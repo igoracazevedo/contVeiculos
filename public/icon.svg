@@ -1,0 +1,19 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#001652" />
+      <stop offset="100%" stop-color="#000d3c" />
+    </linearGradient>
+  </defs>
+
+  <!-- Squircle (cantos arredondados ~22% = 112px em 512px) -->
+  <rect x="12" y="12" width="488" height="488" rx="112" fill="url(#bgGrad)" stroke="#ff6200" stroke-width="16" />
+
+  <!-- Símbolo branco: Combustível / Energia / LitroWatt -->
+  <path d="M280 60L100 290H250L210 450L410 220H260L280 60Z" fill="#ffffff" />
+
+  <!-- Sigla 'iaz' em Dourado #ffb800 -->
+  <text x="256" y="475" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="64" font-weight="900" letter-spacing="-3px" fill="#ffb800">
+    iaz
+  </text>
+</svg>

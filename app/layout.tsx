@@ -2,12 +2,22 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'IazGas & Energia',
-  description: 'Controle de veículos, abastecimentos e recargas elétricas',
+  title: 'LitroWatt IAZ',
+  description: 'Controle inteligente de combustível, recargas e veículos',
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#020617',
+  themeColor: '#000d3c',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -20,10 +30,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className="dark">
-      <body className="bg-slate-950 text-slate-100 min-h-screen selection:bg-sky-500 selection:text-white">
-        {children}
-      </body>
+    <html lang="pt-BR">
+      <body className="min-h-screen select-none">{children}</body>
     </html>
   );
 }

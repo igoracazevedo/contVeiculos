@@ -84,6 +84,31 @@ export function formatCurrency(value: number | null | undefined): string {
 }
 
 /**
+ * Formata valor digitado como máscara de moeda brasileira: '1.234,56'
+ */
+export function formatCurrencyMask(input: string | number | null | undefined): string {
+  if (input === null || input === undefined || input === '') return '0,00';
+  // Extrair apenas dígitos
+  const digits = String(input).replace(/\D/g, '');
+  if (!digits) return '0,00';
+  const floatVal = parseInt(digits, 10) / 100;
+  return floatVal.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+/**
+ * Converte string mascarada '1.234,56' para número float: 1234.56
+ */
+export function parseCurrencyMask(maskedText: string | null | undefined): number {
+  if (!maskedText) return 0;
+  const digits = String(maskedText).replace(/\D/g, '');
+  if (!digits) return 0;
+  return parseInt(digits, 10) / 100;
+}
+
+/**
  * Formata números no padrão pt-BR (ex: 1.234,56).
  */
 export function formatNumber(

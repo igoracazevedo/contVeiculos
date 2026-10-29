@@ -9,10 +9,12 @@ import {
   calcularMediaKmL,
   formatDateBR,
   parseDate,
+  getMonthName,
 } from '@/lib/utils';
-import { BottomNav, NavTab } from '@/components/BottomNav';
+import { LogoBadge } from '@/components/LogoBadge';
 import { CarCard } from '@/components/CarCard';
 import { HierarquiaAnoMes } from '@/components/HierarquiaAnoMes';
+import { GraficosScreen } from '@/components/GraficosScreen';
 import { FormVeiculo } from '@/components/FormVeiculo';
 import { FormAbastecimento } from '@/components/FormAbastecimento';
 import { FormRecarga } from '@/components/FormRecarga';
@@ -36,12 +38,23 @@ import {
   Users,
   LogOut,
   ShieldCheck,
-  Shield,
+  Search,
+  HelpCircle,
+  Moon,
+  Sun,
+  Eye,
+  EyeOff,
+  ChevronLeft,
+  ChevronRight,
+  BarChart3,
+  Download,
   Filter,
 } from 'lucide-react';
 
+export type IazTab = 'resumo' | 'gasolina' | 'energia' | 'graficos' | 'academia' | 'veiculos';
+
 export default function HomePage() {
-  const [activeTab, setActiveTab] = useState<NavTab>('inicio');
+  const [activeTab, setActiveTab] = useState<IazTab>('resumo');
 
   // Estados de Autenticação e Whitelist
   const [authLoading, setAuthLoading] = useState(true);
@@ -67,11 +80,29 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ text: string; type?: 'success' | 'error' } | null>(null);
+
+  // Padrão IAZ: Ocultar valores monetários (Olho)
+  const [hideValues, setHideValues] = useState<boolean>(false);
+
+  // Padrão IAZ: Modo Escuro (.dark-theme)
+  const [isDark, setIsDark] = useState<boolean>(false);
+
+  // Padrão IAZ: Menu de Perfil / Avatar Dropdown
+  const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
+
+  // Padrão IAZ: Barra de Busca Rápida
+  const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Padrão IAZ: Guia de Ajuda Contextual (?)
+  const [isHelpOpen, setIsHelpOpen] = useState<boolean>(false);
+
+  // Seletor de Período em Linha Única (Mês Atual por padrão)
+  const [selectedPeriodDate, setSelectedPeriodDate] = useState<Date>(new Date());
+  const [filterByPeriod, setFilterByPeriod] = useState<boolean>(false);
 
   // Modais de Criação e Edição
-  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
-
   const [isVehicleModalOpen, setIsVehicleModalOpen] = useState(false);
   const [vehicleToEdit, setVehicleToEdit] = useState<Veiculo | null>(null);
 
@@ -81,11 +112,44 @@ export default function HomePage() {
   const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false);
   const [rechargeToEdit, setRechargeToEdit] = useState<Recarga | null>(null);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
+  // Inicialização de Tema e Preferências
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('iaz_theme');
+      if (savedTheme === 'dark') {
+        setIsDark(true);
+        document.documentElement.classList.add('dark-theme');
+      }
+      const savedHide = localStorage.getItem('iaz_hide_values');
+      if (savedHide === 'true') {
+        setHideValues(true);
+      }
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const nextDark = !isDark;
+    setIsDark(nextDark);
+    if (nextDark) {
+      document.documentElement.classList.add('dark-theme');
+      localStorage.setItem('iaz_theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark-theme');
+      localStorage.setItem('iaz_theme', 'light');
+    }
+  };
+
+  const toggleHideValues = () => {
+    const nextVal = !hideValues;
+    setHideValues(nextVal);
+    localStorage.setItem('iaz_hide_values', String(nextVal));
+  };
+
+  const showToast = (text: string, type: 'success' | 'error' = 'success') => {
+    setToastMessage({ text, type });
     setTimeout(() => {
       setToastMessage(null);
-    }, 3500);
+    }, 4000);
   };
 
   const isAdmin = useMemo(() => {
@@ -120,7 +184,6 @@ export default function HomePage() {
         .maybeSingle();
 
       if (error) {
-        // Se a tabela ainda não existir no Supabase
         if (
           error.code === '42P01' ||
           error.message?.includes('Could not find the table') ||
@@ -149,7 +212,6 @@ export default function HomePage() {
       }
 
       if (!data) {
-        // Usuário não cadastrado na tabela de usuários liberados
         if (isMasterAdmin) {
           setWhitelistStatus('authorized');
           setWhitelistData({
@@ -170,7 +232,6 @@ export default function HomePage() {
         return;
       }
 
-      // Usuário encontrado: validar ativo e período de vigência
       const todayStr = new Date().toISOString().split('T')[0];
 
       if (!data.ativo) {
@@ -210,14 +271,12 @@ export default function HomePage() {
   useEffect(() => {
     let mounted = true;
 
-    // Verificar sessão existente
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (mounted) {
         checkAuthAndWhitelist(session?.user ?? null);
       }
     });
 
-    // Ouvinte em tempo real de login/logout
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -256,10 +315,6 @@ export default function HomePage() {
         const allR: Recarga[] = rRes.data || [];
 
         const currentEmail = sessionUser.email?.toLowerCase();
-
-        // Isolamento de dados por usuário:
-        // Se for admin e viewAllRecords for true, exibe tudo.
-        // Caso contrário, filtra apenas registros do usuário logado (ou legados sem user_email para compatibilidade)
         const filterForUser = !isAdmin || !viewAllRecords;
 
         const myV = filterForUser
@@ -309,6 +364,7 @@ export default function HomePage() {
   const handleRefresh = async () => {
     setRefreshing(true);
     await fetchData(true);
+    showToast('Dados sincronizados com sucesso!');
   };
 
   const handleSignOut = async () => {
@@ -316,16 +372,76 @@ export default function HomePage() {
     window.location.reload();
   };
 
+  // Determinar se o menu Academia deve aparecer:
+  // Se houver veículo selecionado, obedece o tem_academia dele;
+  // Se não houver, exibe se pelo menos um veículo tiver academia habilitada.
+  const hasAcademiaEnabled = useMemo(() => {
+    if (selectedPlaca) {
+      const v = veiculos.find((veic) => veic.placa === selectedPlaca);
+      return Boolean(v?.tem_academia);
+    }
+    return veiculos.some((v) => v.tem_academia);
+  }, [veiculos, selectedPlaca]);
+
+  // Se academia estiver inativa e o usuário estiver nela, redireciona para resumo
+  useEffect(() => {
+    if (activeTab === 'academia' && !hasAcademiaEnabled) {
+      setActiveTab('resumo');
+    }
+  }, [activeTab, hasAcademiaEnabled]);
+
   // Filtragem por placa caso selecionado
-  const filteredAbastecimentos = useMemo(() => {
+  const baseFilteredAbastecimentos = useMemo(() => {
     if (!selectedPlaca) return abastecimentos;
     return abastecimentos.filter((a) => a.placa === selectedPlaca);
   }, [abastecimentos, selectedPlaca]);
 
-  const filteredRecargas = useMemo(() => {
+  const baseFilteredRecargas = useMemo(() => {
     if (!selectedPlaca) return recargas;
     return recargas.filter((r) => r.placa === selectedPlaca);
   }, [recargas, selectedPlaca]);
+
+  // Filtragem opcional pelo seletor de período (ano e mês)
+  const filteredAbastecimentos = useMemo(() => {
+    let list = baseFilteredAbastecimentos;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter(
+        (a) =>
+          a.placa.toLowerCase().includes(q) ||
+          a.local?.toLowerCase().includes(q) ||
+          a.tipo_gasolina.toLowerCase().includes(q) ||
+          a.data.includes(q)
+      );
+    }
+    if (!filterByPeriod) return list;
+    const targetYear = selectedPeriodDate.getFullYear();
+    const targetMonth = selectedPeriodDate.getMonth() + 1;
+    return list.filter((a) => {
+      const d = parseDate(a.data_hora || a.data);
+      return d.getFullYear() === targetYear && d.getMonth() + 1 === targetMonth;
+    });
+  }, [baseFilteredAbastecimentos, searchQuery, filterByPeriod, selectedPeriodDate]);
+
+  const filteredRecargas = useMemo(() => {
+    let list = baseFilteredRecargas;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter(
+        (r) =>
+          r.placa.toLowerCase().includes(q) ||
+          r.local?.toLowerCase().includes(q) ||
+          r.data.includes(q)
+      );
+    }
+    if (!filterByPeriod) return list;
+    const targetYear = selectedPeriodDate.getFullYear();
+    const targetMonth = selectedPeriodDate.getMonth() + 1;
+    return list.filter((r) => {
+      const d = parseDate(r.data_hora || r.data);
+      return d.getFullYear() === targetYear && d.getMonth() + 1 === targetMonth;
+    });
+  }, [baseFilteredRecargas, searchQuery, filterByPeriod, selectedPeriodDate]);
 
   // Recargas da Academia
   const recargasAcademia = useMemo(() => {
@@ -351,12 +467,10 @@ export default function HomePage() {
 
   const totalGeral = totalGastoGasolina + totalGastoEnergia;
 
-  // Média Geral de Consumo Ponderada dos Abastecimentos Atuais
   const mediaGeralKmL = useMemo(() => {
     return calcularMediaKmL(filteredAbastecimentos);
   }, [filteredAbastecimentos]);
 
-  // Academia: Quantidade de Idas e Valor Total (Idas × R$ 60,00)
   const totalIdasAcademia = recargasAcademia.length;
   const valorTotalAcademia = totalIdasAcademia * 60;
 
@@ -367,7 +481,7 @@ export default function HomePage() {
       | { type: 'energia'; data: Recarga; time: number }
     > = [];
 
-    for (const a of abastecimentos) {
+    for (const a of baseFilteredAbastecimentos) {
       list.push({
         type: 'gasolina',
         data: a,
@@ -375,7 +489,7 @@ export default function HomePage() {
       });
     }
 
-    for (const r of recargas) {
+    for (const r of baseFilteredRecargas) {
       list.push({
         type: 'energia',
         data: r,
@@ -384,11 +498,40 @@ export default function HomePage() {
     }
 
     list.sort((a, b) => b.time - a.time);
-    return list.slice(0, 4);
-  }, [abastecimentos, recargas]);
+    return list.slice(0, 5);
+  }, [baseFilteredAbastecimentos, baseFilteredRecargas]);
 
-  // Operações de CRUD com Supabase vinculando ao Usuário Autenticado
-  // 1. Veículo
+  // Manipulação do Seletor de Período
+  const handlePrevMonth = () => {
+    setFilterByPeriod(true);
+    setSelectedPeriodDate((prev) => {
+      const d = new Date(prev);
+      d.setMonth(d.getMonth() - 1);
+      return d;
+    });
+  };
+
+  const handleNextMonth = () => {
+    setFilterByPeriod(true);
+    setSelectedPeriodDate((prev) => {
+      const d = new Date(prev);
+      d.setMonth(d.getMonth() + 1);
+      return d;
+    });
+  };
+
+  const handleResetCurrentMonth = () => {
+    setSelectedPeriodDate(new Date());
+    setFilterByPeriod(false);
+  };
+
+  const currentPeriodLabel = useMemo(() => {
+    const m = selectedPeriodDate.getMonth() + 1;
+    const y = selectedPeriodDate.getFullYear();
+    return `${getMonthName(m)} de ${y}`;
+  }, [selectedPeriodDate]);
+
+  // CRUD Operations
   const handleSaveVeiculo = async (data: Partial<Veiculo>, isEdit: boolean) => {
     const currentEmail = sessionUser?.email?.toLowerCase() || null;
     const currentUserId = sessionUser?.id || null;
@@ -398,6 +541,7 @@ export default function HomePage() {
         marca: data.marca,
         modelo: data.modelo,
         foto: data.foto,
+        tem_academia: data.tem_academia ?? false,
       };
       if (currentEmail) updatePayload.user_email = currentEmail;
 
@@ -413,6 +557,7 @@ export default function HomePage() {
         marca: data.marca as string,
         modelo: data.modelo as string,
         foto: data.foto,
+        tem_academia: data.tem_academia ?? false,
         user_email: currentEmail,
         user_id: currentUserId,
       };
@@ -432,7 +577,6 @@ export default function HomePage() {
     await fetchData(true);
   };
 
-  // 2. Abastecimento
   const handleSaveAbastecimento = async (data: Partial<Abastecimento>, isEdit: boolean) => {
     const currentEmail = sessionUser?.email?.toLowerCase() || null;
     const currentUserId = sessionUser?.id || null;
@@ -455,7 +599,7 @@ export default function HomePage() {
         .update(updatePayload)
         .eq('id', data.id);
       if (error) throw error;
-      showToast('Abastecimento atualizado!');
+      showToast('Abastecimento atualizado com sucesso!');
     } else {
       const insertPayload: any = {
         placa: data.placa as string,
@@ -484,7 +628,6 @@ export default function HomePage() {
     await fetchData(true);
   };
 
-  // 3. Recarga
   const handleSaveRecarga = async (data: Partial<Recarga>, isEdit: boolean) => {
     const currentEmail = sessionUser?.email?.toLowerCase() || null;
     const currentUserId = sessionUser?.id || null;
@@ -499,7 +642,7 @@ export default function HomePage() {
         kwa: data.kwa,
         valor: data.valor,
         local: data.local,
-        academia: data.academia,
+        academia: data.academia ?? false,
       };
       if (currentEmail) updatePayload.user_email = currentEmail;
 
@@ -538,28 +681,59 @@ export default function HomePage() {
     await fetchData(true);
   };
 
-  // =========================================================================
-  // CONDICIONAIS DE TELA (AUTENTICAÇÃO E LIBERAÇÃO DE ACESSO)
-  // =========================================================================
+  // Itens de Navegação em Squircles
+  const navItems = useMemo(() => {
+    const list: Array<{ id: IazTab; label: string; icon: any }> = [
+      { id: 'resumo', label: 'Resumo', icon: Layers },
+      { id: 'gasolina', label: 'Gasolina', icon: Fuel },
+      { id: 'energia', label: 'Energia', icon: Zap },
+      { id: 'graficos', label: 'Gráficos', icon: BarChart3 },
+    ];
 
-  // 1. Tela de Carregando Sessão Inicial
+    if (hasAcademiaEnabled) {
+      list.push({ id: 'academia', label: 'Academia', icon: Dumbbell });
+    }
+
+    list.push({ id: 'veiculos', label: 'Veículos', icon: Car });
+    return list;
+  }, [hasAcademiaEnabled]);
+
+  // Título da Tela Ativa
+  const activeScreenTitle = useMemo(() => {
+    switch (activeTab) {
+      case 'resumo':
+        return 'Resumo Geral';
+      case 'gasolina':
+        return 'Combustível';
+      case 'energia':
+        return 'Recargas Elétricas';
+      case 'graficos':
+        return 'Gráficos & Análise';
+      case 'academia':
+        return 'Recargas na Academia';
+      case 'veiculos':
+        return 'Meus Veículos';
+      default:
+        return 'LitroWatt IAZ';
+    }
+  }, [activeTab]);
+
+  // Condicionais de Carregamento e Bloqueio
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center px-4">
-        <div className="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center animate-spin mb-4">
-          <Fuel className="w-6 h-6 text-sky-400" />
-        </div>
-        <p className="text-xs text-slate-400 font-semibold">Autenticando no IazGas & Energia...</p>
+      <div className="min-h-screen bg-[#000d3c] flex flex-col justify-center items-center px-4">
+        <LogoBadge size="lg" className="animate-bounce mb-3" />
+        <p className="text-xs text-slate-300 font-semibold tracking-wide">
+          Carregando LitroWatt IAZ...
+        </p>
       </div>
     );
   }
 
-  // 2. Não Autenticado -> Tela de Login com Google
   if (!sessionUser) {
     return <LoginScreen />;
   }
 
-  // 3. Autenticado mas Bloqueado ou Não Autorizado na Whitelist
   if (whitelistStatus !== 'authorized') {
     return (
       <AccessBlockedScreen
@@ -577,245 +751,831 @@ export default function HomePage() {
     sessionUser.user_metadata?.avatar_url || sessionUser.user_metadata?.picture;
   const userName =
     sessionUser.user_metadata?.full_name || sessionUser.user_metadata?.name || sessionUser.email;
+  const firstName = userName.split(' ')[0];
 
-  // =========================================================================
-  // APLICAÇÃO PRINCIPAL (USUÁRIO AUTORIZADO)
-  // =========================================================================
   return (
-    <main className="max-w-md mx-auto min-h-screen pb-28 px-4 pt-3 select-none">
-      {/* Toast de Notificação */}
+    <div className="min-h-screen bg-[#000d3c] text-slate-800 dark:text-slate-200">
+      {/* Toast Padrão IAZ: Canto Superior Direito, Azul-Marinho com borda Laranja */}
       {toastMessage && (
-        <div className="fixed top-4 left-4 right-4 z-50 max-w-md mx-auto animate-in slide-in-from-top duration-200">
-          <div className="bg-emerald-500/90 text-slate-950 font-semibold text-xs px-4 py-3 rounded-2xl shadow-xl flex items-center justify-between backdrop-blur-md">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-slate-950 flex-shrink-0" />
-              <span>{toastMessage}</span>
+        <div className="fixed top-4 right-4 z-50 max-w-sm w-full animate-in slide-in-from-top-3 duration-200">
+          <div
+            className={`px-4 py-3 rounded-2xl shadow-2xl flex items-center justify-between border ${
+              toastMessage.type === 'error'
+                ? 'bg-[#001652] text-white border-rose-600'
+                : 'bg-[#001652] text-white border-[#ff6200]'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <span
+                className={`w-2.5 h-2.5 rounded-full ${
+                  toastMessage.type === 'error' ? 'bg-rose-500' : 'bg-[#ff6200]'
+                }`}
+              />
+              <span className="text-xs font-semibold">{toastMessage.text}</span>
             </div>
-            <button onClick={() => setToastMessage(null)}>
+            <button
+              onClick={() => setToastMessage(null)}
+              className="p-1 rounded-lg hover:bg-white/10 text-slate-300"
+            >
               <X className="w-4 h-4" />
             </button>
           </div>
         </div>
       )}
 
-      {/* Header Superior Mobile com Perfil do Usuário */}
-      <header className="pb-3 border-b border-slate-900 space-y-2.5">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <h1 className="text-lg font-black tracking-tight text-white flex items-center gap-1">
-                IazGas <span className="text-sky-400">&</span> Energia
-              </h1>
-            </div>
-            <p className="text-[11px] text-slate-400 font-medium">
-              Gestão individual de combustível e recargas
-            </p>
+      {/* =========================================================================
+          1. TOPO AZUL-MARINHO (#000d3c, pb-7)
+         ========================================================================= */}
+      <header className="bg-[#000d3c] text-white pt-4 pb-8 px-4 sm:px-6 relative z-30">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          {/* Esquerda: Avatar do usuário (+ pill com primeiro nome no >=sm) */}
+          <div className="relative">
+            <button
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              className="flex items-center gap-2.5 p-1 rounded-full hover:bg-white/10 transition-colors focus:outline-none"
+              title="Meu perfil"
+            >
+              {userAvatar ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={userAvatar}
+                  alt={userName}
+                  className="w-9 h-9 rounded-full object-cover border-2 border-[#ff6200]"
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-[#001652] border-2 border-[#ff6200] flex items-center justify-center text-xs font-extrabold text-[#ffb800]">
+                  {sessionUser.email?.slice(0, 2).toUpperCase()}
+                </div>
+              )}
+
+              {/* Pill com primeiro nome e identificador no >=sm */}
+              <div className="hidden sm:flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-full text-xs font-bold text-white">
+                <span>{firstName}</span>
+                {isAdmin && (
+                  <span className="bg-[#ff6200] text-white text-[9px] px-1.5 py-0.2 rounded font-extrabold uppercase">
+                    Admin
+                  </span>
+                )}
+              </div>
+            </button>
+
+            {/* Dropdown do Perfil */}
+            {isProfileOpen && (
+              <div
+                className="absolute left-0 mt-2 w-72 bg-[#001652] text-white rounded-3xl p-4 shadow-2xl border border-white/15 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-3"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-3 pb-3 border-b border-white/10">
+                  {userAvatar ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={userAvatar}
+                      alt={userName}
+                      className="w-11 h-11 rounded-full object-cover border-2 border-[#ff6200]"
+                    />
+                  ) : (
+                    <div className="w-11 h-11 rounded-full bg-[#000d3c] border-2 border-[#ff6200] flex items-center justify-center text-sm font-black text-[#ffb800]">
+                      {sessionUser.email?.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="truncate">
+                    <h4 className="text-sm font-extrabold text-white truncate">{userName}</h4>
+                    <p className="text-[11px] text-slate-300 truncate font-mono">{sessionUser.email}</p>
+                    <span className="inline-block mt-0.5 text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#ff6200]/20 text-[#ffb800] uppercase">
+                      {isAdmin ? 'Administrador' : 'Usuário Padrão'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-1 text-xs">
+                  <div className="flex items-center justify-between py-1 text-slate-300">
+                    <span>Versão do App:</span>
+                    <span className="font-mono text-white font-bold">LitroWatt v1.2.0</span>
+                  </div>
+
+                  {isAdmin && (
+                    <button
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        setIsUsersModalOpen(true);
+                      }}
+                      className="w-full text-left py-2 px-3 rounded-xl hover:bg-white/10 text-white font-bold flex items-center justify-between transition-colors"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-[#ff6200]" />
+                        <span>Painel de Usuários</span>
+                      </span>
+                      <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded font-mono">
+                        Gerenciar
+                      </span>
+                    </button>
+                  )}
+
+                  {/* Toggle Exibição Admin */}
+                  {isAdmin && (
+                    <div className="pt-2 border-t border-white/10 space-y-1.5">
+                      <span className="text-[10px] uppercase font-bold text-slate-300 flex items-center gap-1">
+                        <Filter className="w-3 h-3 text-[#ff6200]" /> Filtro de Registros:
+                      </span>
+                      <div className="flex bg-[#000d3c] p-0.5 rounded-xl border border-white/10">
+                        <button
+                          onClick={() => setViewAllRecords(false)}
+                          className={`flex-1 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                            !viewAllRecords ? 'bg-[#ff6200] text-white' : 'text-slate-400'
+                          }`}
+                        >
+                          Meus
+                        </button>
+                        <button
+                          onClick={() => setViewAllRecords(true)}
+                          className={`flex-1 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                            viewAllRecords ? 'bg-[#ff6200] text-white' : 'text-slate-400'
+                          }`}
+                        >
+                          Todos
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full text-left py-2 px-3 rounded-xl hover:bg-rose-500/20 text-rose-300 font-bold flex items-center gap-2 transition-colors pt-2 border-t border-white/10"
+                  >
+                    <LogOut className="w-4 h-4 text-rose-400" />
+                    <span>Sair da Conta</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="flex items-center gap-1.5">
+          {/* Centro: Nome do App sem slogans */}
+          <div className="flex items-center gap-2">
+            <LogoBadge size="sm" />
+            <span className="text-base sm:text-lg font-black tracking-tight text-white leading-none">
+              LitroWatt <span className="text-[#ff6200]">IAZ</span>
+            </span>
+          </div>
+
+          {/* Direita: Ícones Redondos nesta ordem: Buscar · Ajuda (?) em dourado · Tema · Sincronizar */}
+          <div className="flex items-center gap-1 sm:gap-1.5">
+            {/* 1. Buscar (lupa) */}
+            <button
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className={`p-2 rounded-full transition-colors ${
+                isSearchOpen ? 'bg-[#ff6200] text-white' : 'hover:bg-white/10 text-white'
+              }`}
+              title="Buscar registros"
+            >
+              <Search className="w-4 h-4" />
+            </button>
+
+            {/* 2. Ajuda (?) em dourado #ffb800 */}
+            <button
+              onClick={() => setIsHelpOpen(true)}
+              className="p-2 rounded-full hover:bg-white/10 text-[#ffb800] transition-colors"
+              title="Como usar esta tela"
+            >
+              <HelpCircle className="w-4 h-4" />
+            </button>
+
+            {/* 3. Tema (lua/sol) */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-full hover:bg-white/10 text-white transition-colors"
+              title={isDark ? 'Ativar tema claro' : 'Ativar tema escuro'}
+            >
+              {isDark ? <Sun className="w-4 h-4 text-[#ffb800]" /> : <Moon className="w-4 h-4" />}
+            </button>
+
+            {/* 4. Sincronizar */}
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-all active:scale-95"
-              title="Atualizar dados"
+              className="p-2 rounded-full hover:bg-white/10 text-white transition-colors"
+              title="Sincronizar dados com o Supabase"
             >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-sky-400' : ''}`} />
-            </button>
-            <button
-              onClick={() => {
-                setVehicleToEdit(null);
-                setIsVehicleModalOpen(true);
-              }}
-              className="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-sky-400 text-xs font-semibold flex items-center gap-1 transition-all active:scale-95"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Veículo</span>
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-[#ff6200]' : ''}`} />
             </button>
           </div>
         </div>
-
-        {/* Card do Usuário Logado */}
-        <div className="p-2.5 rounded-2xl bg-slate-900/90 border border-slate-800/80 flex items-center justify-between gap-2 shadow-sm">
-          <div className="flex items-center gap-2.5 truncate">
-            {userAvatar ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={userAvatar}
-                alt={userName}
-                className="w-8 h-8 rounded-full border border-sky-400/40 object-cover flex-shrink-0"
-              />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-slate-800 border border-sky-400/30 flex items-center justify-center text-xs font-bold text-sky-400 flex-shrink-0">
-                {sessionUser.email?.slice(0, 2).toUpperCase()}
-              </div>
-            )}
-
-            <div className="truncate">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-bold text-white truncate max-w-[130px]">
-                  {userName}
-                </span>
-                <span
-                  className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase tracking-wider ${
-                    isAdmin
-                      ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                      : 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
-                  }`}
-                >
-                  {isAdmin ? 'Admin' : 'Usuário'}
-                </span>
-              </div>
-              <p className="text-[10px] text-slate-400 font-mono truncate">{sessionUser.email}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            {/* Atalho de Administrador: Gerenciar Usuários */}
-            {isAdmin && (
-              <button
-                onClick={() => setIsUsersModalOpen(true)}
-                className="p-1.5 px-2 rounded-xl bg-purple-950/60 hover:bg-purple-900/60 border border-purple-800/60 text-purple-300 text-[11px] font-semibold flex items-center gap-1 transition-all"
-                title="Gerenciar Usuários Liberados"
-              >
-                <Users className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Liberados</span>
-              </button>
-            )}
-
-            {/* Botão de Logout */}
-            <button
-              onClick={handleSignOut}
-              className="p-1.5 rounded-xl bg-slate-800/80 hover:bg-red-950/50 hover:text-red-400 text-slate-400 transition-colors"
-              title="Sair da Conta"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Toggle para Admin: Meus Registros vs Frota Completa */}
-        {isAdmin && (
-          <div className="flex items-center justify-between px-1 text-[11px]">
-            <span className="text-slate-400 flex items-center gap-1">
-              <Filter className="w-3 h-3 text-purple-400" />
-              Exibição:
-            </span>
-            <div className="flex bg-slate-900 p-0.5 rounded-xl border border-slate-800">
-              <button
-                onClick={() => setViewAllRecords(false)}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
-                  !viewAllRecords
-                    ? 'bg-purple-600 text-white shadow'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Meus Registros
-              </button>
-              <button
-                onClick={() => setViewAllRecords(true)}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
-                  viewAllRecords
-                    ? 'bg-purple-600 text-white shadow'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Todos os Registros
-              </button>
-            </div>
-          </div>
-        )}
       </header>
 
-      {/* Barra de Filtro de Veículo */}
-      {veiculos.length > 0 && (
-        <div className="py-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar">
-          <button
-            onClick={() => setSelectedPlaca(null)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-              selectedPlaca === null
-                ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
-                : 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-slate-200'
-            }`}
-          >
-            Todos os Veículos ({veiculos.length})
-          </button>
-          {veiculos.map((v) => (
+      {/* =========================================================================
+          2. FOLHA CURVADA (-mt-4 rounded-t-[26px] bg-[#f4f5f7], max-w-5xl mx-auto)
+         ========================================================================= */}
+      <main className="iaz-sheet -mt-4 bg-[#f4f5f7] min-h-[calc(100vh-60px)] px-4 sm:px-6 pt-5 pb-16 relative z-30">
+        <div className="max-w-5xl mx-auto space-y-4">
+          {/* Barra de Busca Rápida (Expansível ao clicar na lupa) */}
+          {isSearchOpen && (
+            <div className="iaz-card p-3 animate-in fade-in slide-in-from-top-2 duration-150 flex items-center gap-2">
+              <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <input
+                type="text"
+                autoFocus
+                placeholder="Buscar por placa, local, posto, tipo..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-transparent text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none"
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')} className="text-slate-400 hover:text-slate-600">
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* =========================================================================
+              3. CABEÇALHO DA TELA (Título à esquerda, Botão de Olho à direita)
+             ========================================================================= */}
+          <div className="flex items-center justify-between pt-1">
+            <div>
+              <h2 className="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+                {activeScreenTitle}
+              </h2>
+            </div>
+
+            {/* Botão de Olho: Ocultar / Mostrar Valores Monetários */}
             <button
-              key={v.placa}
-              onClick={() => setSelectedPlaca(v.placa === selectedPlaca ? null : v.placa)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap flex items-center gap-1.5 transition-all ${
-                selectedPlaca === v.placa
-                  ? 'bg-sky-500 text-slate-950 font-bold shadow-md shadow-sky-500/20'
-                  : 'bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700'
+              onClick={toggleHideValues}
+              className={`p-2 rounded-xl border flex items-center gap-1.5 text-xs font-semibold transition-all ${
+                hideValues
+                  ? 'bg-[#ff6200] text-white border-[#ff6200] shadow-sm'
+                  : 'bg-white dark:bg-[#151f32] text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-[#293548] hover:border-[#ff6200]'
+              }`}
+              title={hideValues ? 'Mostrar valores monetários' : 'Ocultar valores monetários'}
+            >
+              {hideValues ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              <span className="hidden sm:inline">
+                {hideValues ? 'Valores Ocultos' : 'Ocultar Valores'}
+              </span>
+            </button>
+          </div>
+
+          {/* =========================================================================
+              4. MENU DE ATALHOS EM SQUIRCLES (NAVEGAÇÃO PRINCIPAL EM TODAS AS TELAS)
+             ========================================================================= */}
+          <div className="flex items-center justify-between sm:justify-start sm:gap-4 w-full py-2 px-0.5">
+            {navItems.map((item) => {
+              const isActive = activeTab === item.id;
+              const IconComponent = item.icon;
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className="flex-1 sm:flex-initial sm:w-[68px] flex flex-col items-center group transition-all"
+                >
+                  <div
+                    className={`w-11 h-11 sm:w-13 sm:h-13 squircle-btn flex items-center justify-center transition-all duration-200 border ${
+                      isActive
+                        ? 'bg-[#ff6200] text-white scale-105 shadow-md shadow-orange-500/25 ring-2 ring-[#ff6200]/25 ring-offset-2 ring-offset-[#f4f5f7] dark:ring-offset-[#0b1120] border-transparent'
+                        : 'bg-white dark:bg-[#151f32] text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-[#293548] group-hover:border-[#ff6200] group-hover:text-[#ff6200]'
+                    }`}
+                  >
+                    <IconComponent className="w-5 h-5 stroke-[1.9]" />
+                  </div>
+                  <span
+                    className={`mt-1.5 text-[10px] sm:text-[11px] leading-tight text-center transition-colors ${
+                      isActive
+                        ? 'font-bold text-[#ff6200]'
+                        : 'font-medium text-slate-600 dark:text-slate-400 group-hover:text-[#ff6200]'
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                  {isActive && (
+                    <div className="h-1 w-5 rounded-full bg-[#ff6200] mt-1 transition-all" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* =========================================================================
+              5. SELETOR DE PERÍODO EM UMA ÚNICA LINHA
+              ‹ · data início até data fim · › + pill "Mês Atual"
+             ========================================================================= */}
+          <div className="iaz-card px-4 py-2.5 flex items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handlePrevMonth}
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold"
+                title="Mês anterior"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="font-extrabold text-slate-900 dark:text-slate-100">
+                {currentPeriodLabel}
+              </span>
+              <button
+                onClick={handleNextMonth}
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold"
+                title="Próximo mês"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            <button
+              onClick={handleResetCurrentMonth}
+              className={`px-3 py-1 rounded-full text-[11px] font-bold transition-colors ${
+                !filterByPeriod
+                  ? 'bg-[#ff6200]/15 text-[#ec7000]'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-[#ec7000]'
               }`}
             >
-              <span className="font-mono">{v.placa}</span>
-              <span className="text-[10px] opacity-75 truncate max-w-[80px]">{v.modelo}</span>
+              Mês Atual
             </button>
-          ))}
-        </div>
-      )}
-
-      {/* Mensagem de Erro de Conexão */}
-      {error && (
-        <div className="my-3 p-3.5 rounded-2xl bg-red-950/60 border border-red-800/80 text-red-200 text-xs flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
-            <span>{error}</span>
           </div>
-          <button
-            onClick={() => fetchData()}
-            className="px-2.5 py-1 bg-red-800/80 hover:bg-red-700 text-white rounded-lg text-[11px] font-semibold"
-          >
-            Tentar de novo
-          </button>
-        </div>
-      )}
 
-      {/* Loading Skeleton */}
-      {loading && (
-        <div className="space-y-4 py-4 animate-pulse">
-          <div className="h-44 bg-slate-900 rounded-2xl border border-slate-800/60" />
-          <div className="grid grid-cols-2 gap-2">
-            <div className="h-20 bg-slate-900 rounded-2xl border border-slate-800/60" />
-            <div className="h-20 bg-slate-900 rounded-2xl border border-slate-800/60" />
-          </div>
-          <div className="h-32 bg-slate-900 rounded-2xl border border-slate-800/60" />
-        </div>
-      )}
-
-      {/* CONTEÚDO PRINCIPAL DAS ABAS */}
-      {!loading && (
-        <div className="pt-2 space-y-4">
           {/* =========================================================================
-              ABA 1: INÍCIO (DASHBOARD & CARROS)
+              FILTRO DE VEÍCULOS (Barra Horizontal)
              ========================================================================= */}
-          {activeTab === 'inicio' && (
+          {veiculos.length > 0 && (
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+              <button
+                onClick={() => setSelectedPlaca(null)}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                  selectedPlaca === null
+                    ? 'bg-[#ff6200] text-white shadow-sm'
+                    : 'bg-white dark:bg-[#151f32] text-slate-600 dark:text-slate-400 border border-slate-200/80 dark:border-[#293548] hover:border-slate-300'
+                }`}
+              >
+                Todos os Veículos ({veiculos.length})
+              </button>
+              {veiculos.map((v) => (
+                <button
+                  key={v.placa}
+                  onClick={() => setSelectedPlaca(v.placa === selectedPlaca ? null : v.placa)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+                    selectedPlaca === v.placa
+                      ? 'bg-[#ff6200] text-white shadow-sm'
+                      : 'bg-white dark:bg-[#151f32] text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-[#293548] hover:border-slate-300'
+                  }`}
+                >
+                  <span className="font-mono">{v.placa}</span>
+                  <span className="text-[10px] opacity-80 truncate max-w-[80px]">{v.modelo}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Erro de conexão se houver */}
+          {error && (
+            <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+              <button
+                onClick={() => fetchData()}
+                className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[11px] font-bold"
+              >
+                Tentar novamente
+              </button>
+            </div>
+          )}
+
+          {/* Loading Skeleton */}
+          {loading && (
+            <div className="space-y-4 py-2 animate-pulse">
+              <div className="h-44 bg-slate-200 dark:bg-[#151f32] rounded-3xl" />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="h-24 bg-slate-200 dark:bg-[#151f32] rounded-3xl" />
+                <div className="h-24 bg-slate-200 dark:bg-[#151f32] rounded-3xl" />
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              CONTEÚDO DAS TELAS
+             ========================================================================= */}
+          {!loading && (
             <div className="space-y-4">
-              {/* Seção Veículos */}
-              <div className="space-y-3">
-                {veiculos.length === 0 ? (
-                  <div className="p-6 text-center rounded-2xl border border-dashed border-slate-800 bg-slate-900/40">
-                    <Car className="w-10 h-10 text-slate-600 mx-auto mb-2" />
-                    <h3 className="font-bold text-slate-300 text-sm">Nenhum veículo cadastrado na sua conta</h3>
-                    <p className="text-xs text-slate-500 mt-1 mb-3">
-                      Cadastre o seu carro para começar a registrar abastecimentos e recargas com total independência.
-                    </p>
+              {/* -------------------------------------------------------------------
+                  TELA 1: RESUMO (DASHBOARD)
+                 ------------------------------------------------------------------- */}
+              {activeTab === 'resumo' && (
+                <div className="space-y-4">
+                  {/* Visão Geral do Investimento */}
+                  <div className="iaz-card p-5 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-2xl bg-orange-500/10 text-[#ff6200]">
+                          <TrendingUp className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <span className="text-[11px] uppercase tracking-wide text-slate-500 font-bold block">
+                            Total Investido
+                          </span>
+                          <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 leading-tight">
+                            {hideValues ? '••••' : formatCurrency(totalGeral)}
+                          </h3>
+                        </div>
+                      </div>
+
+                      {mediaGeralKmL !== null && (
+                        <div className="text-right bg-slate-50 dark:bg-slate-900/60 px-3 py-2 rounded-2xl border border-slate-200/80 dark:border-slate-800">
+                          <span className="text-[10px] text-slate-500 block font-bold uppercase">
+                            Média Global
+                          </span>
+                          <span className="text-xs font-black text-[#ff6200]">
+                            {formatNumber(mediaGeralKmL, 2)} km/l
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Sub-cards: Combustível, Energia, Academia */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                      <div
+                        onClick={() => setActiveTab('gasolina')}
+                        className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 cursor-pointer hover:border-amber-500/50 transition-all space-y-1"
+                      >
+                        <div className="flex items-center justify-between text-amber-600 dark:text-amber-400 font-bold text-xs">
+                          <span className="flex items-center gap-1.5">
+                            <Fuel className="w-4 h-4" /> Combustível
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-normal">
+                            {filteredAbastecimentos.length} reg.
+                          </span>
+                        </div>
+                        <p className="text-lg font-extrabold text-slate-900 dark:text-slate-100">
+                          {hideValues ? '••••' : formatCurrency(totalGastoGasolina)}
+                        </p>
+                        <p className="text-[11px] text-slate-500">
+                          {formatNumber(totalLitrosGasolina, 1)} L abastecidos
+                        </p>
+                      </div>
+
+                      <div
+                        onClick={() => setActiveTab('energia')}
+                        className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 cursor-pointer hover:border-blue-500/50 transition-all space-y-1"
+                      >
+                        <div className="flex items-center justify-between text-blue-600 dark:text-blue-400 font-bold text-xs">
+                          <span className="flex items-center gap-1.5">
+                            <Zap className="w-4 h-4" /> Energia Elétrica
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-normal">
+                            {filteredRecargas.length} reg.
+                          </span>
+                        </div>
+                        <p className="text-lg font-extrabold text-slate-900 dark:text-slate-100">
+                          {hideValues ? '••••' : formatCurrency(totalGastoEnergia)}
+                        </p>
+                        <p className="text-[11px] text-slate-500">
+                          {formatNumber(totalKwaEnergia, 1)} kWh recarregados
+                        </p>
+                      </div>
+
+                      {hasAcademiaEnabled && (
+                        <div
+                          onClick={() => setActiveTab('academia')}
+                          className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 cursor-pointer hover:border-[#ff6200]/50 transition-all space-y-1"
+                        >
+                          <div className="flex items-center justify-between text-[#ff6200] font-bold text-xs">
+                            <span className="flex items-center gap-1.5">
+                              <Dumbbell className="w-4 h-4" /> Academia
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-normal">
+                              {totalIdasAcademia} idas
+                            </span>
+                          </div>
+                          <p className="text-lg font-extrabold text-slate-900 dark:text-slate-100">
+                            {hideValues ? '••••' : formatCurrency(valorTotalAcademia)}
+                          </p>
+                          <p className="text-[11px] text-slate-500">
+                            {totalIdasAcademia} idas × R$ 60
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Carros em Destaque */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between px-1">
+                      <span className="text-[11px] uppercase tracking-wide text-slate-500 font-bold">
+                        Veículo Ativo
+                      </span>
+                      <button
+                        onClick={() => setActiveTab('veiculos')}
+                        className="text-xs font-bold text-[#ff6200] hover:text-[#ec7000]"
+                      >
+                        Ver todos →
+                      </button>
+                    </div>
+
+                    {veiculos.length === 0 ? (
+                      <div className="iaz-card p-6 text-center space-y-3">
+                        <Car className="w-10 h-10 text-slate-400 mx-auto" />
+                        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                          Nenhum veículo cadastrado
+                        </h4>
+                        <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                          Cadastre seu carro para começar a registrar consumo com fotos públicas sem direitos autorais.
+                        </p>
+                        <button
+                          onClick={() => {
+                            setVehicleToEdit(null);
+                            setIsVehicleModalOpen(true);
+                          }}
+                          className="px-4 py-2 bg-[#ff6200] hover:bg-[#ec7000] text-white text-xs font-bold rounded-xl shadow-md transition-all"
+                        >
+                          Cadastrar Veículo
+                        </button>
+                      </div>
+                    ) : (
+                      veiculos
+                        .filter((v) => !selectedPlaca || v.placa === selectedPlaca)
+                        .slice(0, 1)
+                        .map((v) => (
+                          <CarCard
+                            key={v.placa}
+                            veiculo={v}
+                            abastecimentos={abastecimentos}
+                            recargas={recargas}
+                            isSelected={selectedPlaca === v.placa}
+                            onSelect={() =>
+                              setSelectedPlaca(selectedPlaca === v.placa ? null : v.placa)
+                            }
+                            onEdit={(veic) => {
+                              setVehicleToEdit(veic);
+                              setIsVehicleModalOpen(true);
+                            }}
+                            onDelete={handleDeleteVeiculo}
+                            hideValues={hideValues}
+                          />
+                        ))
+                    )}
+                  </div>
+
+                  {/* Últimos Lançamentos */}
+                  {recentActivity.length > 0 && (
+                    <div className="iaz-card p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] uppercase tracking-wide text-slate-500 font-bold flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-slate-400" /> Últimos Lançamentos
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              setFuelToEdit(null);
+                              setIsFuelModalOpen(true);
+                            }}
+                            className="text-[11px] font-bold text-amber-600 hover:underline"
+                          >
+                            + Abastecer
+                          </button>
+                          <span>•</span>
+                          <button
+                            onClick={() => {
+                              setRechargeToEdit(null);
+                              setIsRechargeModalOpen(true);
+                            }}
+                            className="text-[11px] font-bold text-blue-600 hover:underline"
+                          >
+                            + Recarregar
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {recentActivity.map((act, index) => {
+                          if (act.type === 'gasolina') {
+                            const a = act.data as Abastecimento;
+                            return (
+                              <div
+                                key={a.id || index}
+                                onClick={() => {
+                                  setFuelToEdit(a);
+                                  setIsFuelModalOpen(true);
+                                }}
+                                className="py-2.5 flex items-center justify-between text-xs hover:bg-slate-50 dark:hover:bg-slate-800/40 px-2 rounded-xl cursor-pointer transition-colors"
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                                    <Fuel className="w-4 h-4" />
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="font-bold text-slate-900 dark:text-slate-100">
+                                        Gasolina {a.tipo_gasolina}
+                                      </span>
+                                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold">
+                                        {a.placa}
+                                      </span>
+                                    </div>
+                                    <span className="text-[11px] text-slate-500 block">
+                                      {formatDateBR(a.data_hora || a.data)} • {formatNumber(a.litros, 2)} L
+                                    </span>
+                                  </div>
+                                </div>
+                                <span className="font-extrabold text-[#ff6200]">
+                                  {hideValues ? '••••' : formatCurrency(a.valor)}
+                                </span>
+                              </div>
+                            );
+                          } else {
+                            const r = act.data as Recarga;
+                            return (
+                              <div
+                                key={r.id || index}
+                                onClick={() => {
+                                  setRechargeToEdit(r);
+                                  setIsRechargeModalOpen(true);
+                                }}
+                                className="py-2.5 flex items-center justify-between text-xs hover:bg-slate-50 dark:hover:bg-slate-800/40 px-2 rounded-xl cursor-pointer transition-colors"
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                                    <Zap className="w-4 h-4" />
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="font-bold text-slate-900 dark:text-slate-100">
+                                        Recarga Elétrica
+                                      </span>
+                                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold">
+                                        {r.placa}
+                                      </span>
+                                      {r.academia && (
+                                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#ff6200]/10 text-[#ff6200] font-bold">
+                                          Academia
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="text-[11px] text-slate-500 block">
+                                      {formatDateBR(r.data_hora || r.data)} • {formatNumber(r.kwa, 2)} kWh
+                                    </span>
+                                  </div>
+                                </div>
+                                <span className="font-extrabold text-[#ff6200]">
+                                  {hideValues ? '••••' : formatCurrency(r.valor)}
+                                </span>
+                              </div>
+                            );
+                          }
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* -------------------------------------------------------------------
+                  TELA 2: GASOLINA (COMBUSTÍVEL)
+                 ------------------------------------------------------------------- */}
+              {activeTab === 'gasolina' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[11px] uppercase tracking-wide text-slate-500 font-bold">
+                        Histórico por Ano e Mês
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setFuelToEdit(null);
+                        setIsFuelModalOpen(true);
+                      }}
+                      className="px-3.5 py-2 rounded-xl bg-[#ff6200] hover:bg-[#ec7000] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-orange-500/20 transition-all active:scale-95"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Novo Abastecimento</span>
+                    </button>
+                  </div>
+
+                  <HierarquiaAnoMes
+                    mode="gasolina"
+                    abastecimentos={filteredAbastecimentos}
+                    onEditAbastecimento={(item) => {
+                      setFuelToEdit(item);
+                      setIsFuelModalOpen(true);
+                    }}
+                    onDeleteAbastecimento={handleDeleteAbastecimento}
+                    hideValues={hideValues}
+                  />
+                </div>
+              )}
+
+              {/* -------------------------------------------------------------------
+                  TELA 3: ENERGIA (RECARDAS ELÉTRICAS)
+                 ------------------------------------------------------------------- */}
+              {activeTab === 'energia' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[11px] uppercase tracking-wide text-slate-500 font-bold">
+                        Histórico de Recargas por Ano e Mês
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setRechargeToEdit(null);
+                        setIsRechargeModalOpen(true);
+                      }}
+                      className="px-3.5 py-2 rounded-xl bg-[#ff6200] hover:bg-[#ec7000] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-orange-500/20 transition-all active:scale-95"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Nova Recarga</span>
+                    </button>
+                  </div>
+
+                  <HierarquiaAnoMes
+                    mode="energia"
+                    recargas={filteredRecargas}
+                    onEditRecarga={(item) => {
+                      setRechargeToEdit(item);
+                      setIsRechargeModalOpen(true);
+                    }}
+                    onDeleteRecarga={handleDeleteRecarga}
+                    hideValues={hideValues}
+                  />
+                </div>
+              )}
+
+              {/* -------------------------------------------------------------------
+                  TELA 4: GRÁFICOS (ANÁLISE MÊS A MÊS DE COMBUSTÍVEL E ENERGIA)
+                 ------------------------------------------------------------------- */}
+              {activeTab === 'graficos' && (
+                <div className="space-y-4">
+                  <GraficosScreen
+                    abastecimentos={baseFilteredAbastecimentos}
+                    recargas={baseFilteredRecargas}
+                    veiculos={veiculos}
+                    selectedPlaca={selectedPlaca}
+                    hideValues={hideValues}
+                  />
+                </div>
+              )}
+
+              {/* -------------------------------------------------------------------
+                  TELA 5: ACADEMIA (CONDICIONADA AO VEÍCULO)
+                 ------------------------------------------------------------------- */}
+              {activeTab === 'academia' && hasAcademiaEnabled && (
+                <div className="space-y-4">
+                  <div className="iaz-card p-4 flex items-center justify-between">
+                    <div>
+                      <span className="text-[11px] uppercase tracking-wide text-slate-500 font-bold">
+                        Saldo Academia
+                      </span>
+                      <h4 className="text-xl font-black text-slate-900 dark:text-slate-100">
+                        {hideValues ? '••••' : formatCurrency(valorTotalAcademia)}
+                      </h4>
+                      <p className="text-xs text-slate-500">
+                        Total de {totalIdasAcademia} idas calculadas a R$ 60,00 cada
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-orange-500/10 text-[#ff6200]">
+                      <Dumbbell className="w-6 h-6" />
+                    </div>
+                  </div>
+
+                  <HierarquiaAnoMes
+                    mode="academia"
+                    recargas={filteredRecargas}
+                    onEditRecarga={(item) => {
+                      setRechargeToEdit(item);
+                      setIsRechargeModalOpen(true);
+                    }}
+                    onDeleteRecarga={handleDeleteRecarga}
+                    hideValues={hideValues}
+                  />
+                </div>
+              )}
+
+              {/* -------------------------------------------------------------------
+                  TELA 6: VEÍCULOS (GARAGEM, FOTOS PÚBLICAS, ACADEMIA)
+                 ------------------------------------------------------------------- */}
+              {activeTab === 'veiculos' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[11px] uppercase tracking-wide text-slate-500 font-bold">
+                        Garagem Cadastrada
+                      </span>
+                      <p className="text-xs text-slate-500">
+                        {veiculos.length} {veiculos.length === 1 ? 'veículo ativo' : 'veículos ativos'}
+                      </p>
+                    </div>
                     <button
                       onClick={() => {
                         setVehicleToEdit(null);
                         setIsVehicleModalOpen(true);
                       }}
-                      className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs rounded-xl transition-colors"
+                      className="px-3.5 py-2 rounded-xl bg-[#ff6200] hover:bg-[#ec7000] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-orange-500/20 transition-all active:scale-95"
                     >
-                      Cadastrar Meu Veículo
+                      <Plus className="w-4 h-4" />
+                      <span>Novo Veículo</span>
                     </button>
                   </div>
-                ) : (
-                  veiculos
-                    .filter((v) => !selectedPlaca || v.placa === selectedPlaca)
-                    .map((v) => (
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {veiculos.map((v) => (
                       <CarCard
                         key={v.placa}
                         veiculo={v}
@@ -830,471 +1590,48 @@ export default function HomePage() {
                           setIsVehicleModalOpen(true);
                         }}
                         onDelete={handleDeleteVeiculo}
+                        hideValues={hideValues}
                       />
-                    ))
-                )}
-              </div>
-
-              {/* Visão Geral do Investimento */}
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900/90 to-slate-950 border border-slate-800/90 shadow-md space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 rounded-xl bg-sky-500/10 text-sky-400">
-                      <TrendingUp className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <span className="text-[11px] font-semibold text-slate-400">Total Investido</span>
-                      <h3 className="text-2xl font-black text-white leading-tight">
-                        {formatCurrency(totalGeral)}
-                      </h3>
-                    </div>
-                  </div>
-                  {mediaGeralKmL !== null && (
-                    <div className="text-right bg-slate-950/80 px-2.5 py-1.5 rounded-xl border border-slate-800">
-                      <span className="text-[10px] text-slate-400 block font-medium">Média Global</span>
-                      <span className="text-xs font-bold text-sky-400">
-                        {formatNumber(mediaGeralKmL, 2)} km/l
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Sub-cards Gasolina, Energia e Academia */}
-                <div className="grid grid-cols-3 gap-2 pt-1 text-xs">
-                  <div
-                    onClick={() => setActiveTab('gasolina')}
-                    className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 cursor-pointer hover:border-amber-500/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-1 text-amber-400 mb-0.5 font-semibold text-[11px]">
-                      <Fuel className="w-3 h-3" />
-                      <span>Gasolina</span>
-                    </div>
-                    <p className="font-bold text-slate-100">{formatCurrency(totalGastoGasolina)}</p>
-                    <p className="text-[10px] text-slate-500 mt-0.5">
-                      {formatNumber(totalLitrosGasolina, 1)} L
-                    </p>
-                  </div>
-
-                  <div
-                    onClick={() => setActiveTab('energia')}
-                    className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 cursor-pointer hover:border-emerald-500/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-1 text-emerald-400 mb-0.5 font-semibold text-[11px]">
-                      <Zap className="w-3 h-3" />
-                      <span>Energia</span>
-                    </div>
-                    <p className="font-bold text-slate-100">{formatCurrency(totalGastoEnergia)}</p>
-                    <p className="text-[10px] text-slate-500 mt-0.5">
-                      {formatNumber(totalKwaEnergia, 1)} kWh
-                    </p>
-                  </div>
-
-                  <div
-                    onClick={() => setActiveTab('academia')}
-                    className="p-2.5 rounded-xl bg-slate-950/70 border border-purple-500/80 cursor-pointer hover:border-purple-500/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-1 text-purple-400 mb-0.5 font-semibold text-[11px]">
-                      <Dumbbell className="w-3 h-3" />
-                      <span>Academia</span>
-                    </div>
-                    <p className="font-bold text-purple-200">
-                      {totalIdasAcademia} {totalIdasAcademia === 1 ? 'ida' : 'idas'}
-                    </p>
-                    <p className="text-[10px] text-purple-400 font-semibold mt-0.5">
-                      {formatCurrency(valorTotalAcademia)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Feed de Atividades Recentes */}
-              {recentActivity.length > 0 && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between px-1">
-                    <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-slate-500" />
-                      Últimos Lançamentos
-                    </h4>
-                  </div>
-
-                  <div className="space-y-2">
-                    {recentActivity.map((act, index) => {
-                      if (act.type === 'gasolina') {
-                        const a = act.data as Abastecimento;
-                        return (
-                          <div
-                            key={a.id || index}
-                            onClick={() => {
-                              setFuelToEdit(a);
-                              setIsFuelModalOpen(true);
-                            }}
-                            className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between text-xs hover:border-slate-700 cursor-pointer transition-colors"
-                          >
-                            <div className="flex items-center gap-2.5">
-                              <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400">
-                                <Fuel className="w-4 h-4" />
-                              </div>
-                              <div>
-                                <div className="flex items-center gap-1.5">
-                                  <span className="font-bold text-white">Gasolina {a.tipo_gasolina}</span>
-                                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-800 text-slate-400">
-                                    {a.placa}
-                                  </span>
-                                </div>
-                                <span className="text-[11px] text-slate-400 block mt-0.5">
-                                  {formatDateBR(a.data_hora || a.data)} • {formatNumber(a.litros, 2)} L
-                                </span>
-                              </div>
-                            </div>
-                            <span className="font-bold text-emerald-400">
-                              {formatCurrency(a.valor)}
-                            </span>
-                          </div>
-                        );
-                      } else {
-                        const r = act.data as Recarga;
-                        return (
-                          <div
-                            key={r.id || index}
-                            onClick={() => {
-                              setRechargeToEdit(r);
-                              setIsRechargeModalOpen(true);
-                            }}
-                            className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between text-xs hover:border-slate-700 cursor-pointer transition-colors"
-                          >
-                            <div className="flex items-center gap-2.5">
-                              <div
-                                className={`p-2 rounded-lg ${
-                                  r.academia
-                                    ? 'bg-purple-500/10 text-purple-400'
-                                    : 'bg-emerald-500/10 text-emerald-400'
-                                }`}
-                              >
-                                {r.academia ? (
-                                  <Dumbbell className="w-4 h-4" />
-                                ) : (
-                                  <Zap className="w-4 h-4" />
-                                )}
-                              </div>
-                              <div>
-                                <div className="flex items-center gap-1.5">
-                                  <span className="font-bold text-white">
-                                    Recarga {r.perc_inicial}% → {r.perc_final}%
-                                  </span>
-                                  {r.academia && (
-                                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30">
-                                      Academia
-                                    </span>
-                                  )}
-                                </div>
-                                <span className="text-[11px] text-slate-400 block mt-0.5">
-                                  {formatDateBR(r.data_hora || r.data)} • {formatNumber(r.kwa, 2)} kWh
-                                </span>
-                              </div>
-                            </div>
-                            <span className="font-bold text-slate-200">
-                              {formatCurrency(r.valor)}
-                            </span>
-                          </div>
-                        );
-                      }
-                    })}
+                    ))}
                   </div>
                 </div>
               )}
             </div>
           )}
-
-          {/* =========================================================================
-              ABA 2: GASOLINA (HISTÓRICO HIERÁRQUICO ANO -> MÊS -> DETALHES)
-             ========================================================================= */}
-          {activeTab === 'gasolina' && (
-            <div className="space-y-3.5">
-              {/* Header do Módulo */}
-              <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-1.5 text-amber-400">
-                    <Fuel className="w-4 h-4" />
-                    <span className="text-xs uppercase tracking-wider font-bold">Gasolina</span>
-                  </div>
-                  <h3 className="text-2xl font-black text-white mt-1">
-                    {formatCurrency(totalGastoGasolina)}
-                  </h3>
-                  <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
-                    <span>{formatNumber(totalLitrosGasolina, 2)} Litros</span>
-                    <span>•</span>
-                    <span>{filteredAbastecimentos.length} abastecimentos</span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => {
-                    setFuelToEdit(null);
-                    setIsFuelModalOpen(true);
-                  }}
-                  className="px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-transform active:scale-95 shadow-md shadow-amber-500/20"
-                >
-                  <Plus className="w-4 h-4 stroke-[2.5]" />
-                  <span>Abastecer</span>
-                </button>
-              </div>
-
-              {/* Acordeom de 2 Níveis */}
-              <HierarquiaAnoMes
-                mode="gasolina"
-                abastecimentos={filteredAbastecimentos}
-                onEditAbastecimento={(item) => {
-                  setFuelToEdit(item);
-                  setIsFuelModalOpen(true);
-                }}
-                onDeleteAbastecimento={handleDeleteAbastecimento}
-              />
-            </div>
-          )}
-
-          {/* =========================================================================
-              ABA 3: ENERGIA (RECARGAS GERAIS COM DESTAQUE ACADEMIA)
-             ========================================================================= */}
-          {activeTab === 'energia' && (
-            <div className="space-y-3.5">
-              {/* Header do Módulo */}
-              <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-1.5 text-emerald-400">
-                    <Zap className="w-4 h-4" />
-                    <span className="text-xs uppercase tracking-wider font-bold">
-                      Recargas Elétricas
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-black text-white mt-1">
-                    {formatCurrency(totalGastoEnergia)}
-                  </h3>
-                  <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
-                    <span>{formatNumber(totalKwaEnergia, 2)} kWh</span>
-                    <span>•</span>
-                    <span>{filteredRecargas.length} recargas</span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => {
-                    setRechargeToEdit(null);
-                    setIsRechargeModalOpen(true);
-                  }}
-                  className="px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-transform active:scale-95 shadow-md shadow-emerald-500/20"
-                >
-                  <Plus className="w-4 h-4 stroke-[2.5]" />
-                  <span>Recarregar</span>
-                </button>
-              </div>
-
-              {/* Acordeom de 2 Níveis */}
-              <HierarquiaAnoMes
-                mode="energia"
-                recargas={filteredRecargas}
-                onEditRecarga={(item) => {
-                  setRechargeToEdit(item);
-                  setIsRechargeModalOpen(true);
-                }}
-                onDeleteRecarga={handleDeleteRecarga}
-              />
-            </div>
-          )}
-
-          {/* =========================================================================
-              ABA 4: ACADEMIA (RECARGAS FILTRADAS ACADEMIA = TRUE + R$ 60 POR IDA)
-             ========================================================================= */}
-          {activeTab === 'academia' && (
-            <div className="space-y-3.5">
-              {/* Header do Módulo Academia */}
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 via-purple-950/30 to-slate-900 border border-purple-800/60 shadow-lg space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400">
-                      <Dumbbell className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <span className="text-[11px] font-semibold text-purple-300">
-                        Custo Estimado Academia
-                      </span>
-                      <h3 className="text-2xl font-black text-white leading-tight">
-                        {formatCurrency(valorTotalAcademia)}
-                      </h3>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      setRechargeToEdit(null);
-                      setIsRechargeModalOpen(true);
-                    }}
-                    className="px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 transition-transform active:scale-95 shadow-md shadow-purple-600/30"
-                  >
-                    <Plus className="w-4 h-4 stroke-[2.5]" />
-                    <span>Nova Ida</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 pt-1 text-xs">
-                  <div className="p-2.5 rounded-xl bg-slate-950/70 border border-purple-900/40">
-                    <span className="text-[10px] text-slate-400 block">Total de Idas</span>
-                    <span className="font-bold text-purple-300 text-sm">
-                      {totalIdasAcademia} {totalIdasAcademia === 1 ? 'ida' : 'idas'}
-                    </span>
-                    <span className="text-[10px] text-slate-500 block mt-0.5">R$ 60,00 por ida</span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-slate-950/70 border border-purple-900/40">
-                    <span className="text-[10px] text-slate-400 block">Energia no Treino</span>
-                    <span className="font-bold text-emerald-400 text-sm">
-                      {formatNumber(
-                        recargasAcademia.reduce((acc, c) => acc + (Number(c.kwa) || 0), 0),
-                        2
-                      )}{' '}
-                      kWh
-                    </span>
-                    <span className="text-[10px] text-slate-500 block mt-0.5">
-                      Recargas conjugadas
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Acordeom de 2 Níveis para Academia */}
-              <HierarquiaAnoMes
-                mode="academia"
-                recargas={filteredRecargas}
-                onEditRecarga={(item) => {
-                  setRechargeToEdit(item);
-                  setIsRechargeModalOpen(true);
-                }}
-                onDeleteRecarga={handleDeleteRecarga}
-              />
-            </div>
-          )}
         </div>
-      )}
+      </main>
 
       {/* =========================================================================
-          SPEED-DIAL / QUICK ADD MODAL AO CLICAR NO BOTÃO '+' CENTRAL
+          MODAIS DE CADASTRO E EDIÇÃO
          ========================================================================= */}
-      {isQuickAddOpen && (
-        <div
-          onClick={() => setIsQuickAddOpen(false)}
-          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm p-4 flex flex-col justify-end pb-24 items-center animate-in fade-in duration-150"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-xs bg-slate-900 border border-slate-800 rounded-3xl p-3 shadow-2xl space-y-2 animate-in slide-in-from-bottom-6 duration-200"
-          >
-            <div className="flex items-center justify-between px-3 py-1 text-slate-400 text-xs font-semibold">
-              <span>Novo Registro</span>
-              <button
-                onClick={() => setIsQuickAddOpen(false)}
-                className="p-1 rounded-full hover:bg-slate-800"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Novo Abastecimento */}
-            <button
-              onClick={() => {
-                setIsQuickAddOpen(false);
-                setFuelToEdit(null);
-                setIsFuelModalOpen(true);
-              }}
-              className="w-full p-3 rounded-2xl bg-slate-950/80 hover:bg-slate-800/80 border border-slate-800 flex items-center gap-3 transition-colors text-left"
-            >
-              <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400">
-                <Fuel className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white">Novo Abastecimento</p>
-                <p className="text-[10px] text-slate-400">Gasolina, aditivada ou podium</p>
-              </div>
-            </button>
-
-            {/* Nova Recarga Elétrica */}
-            <button
-              onClick={() => {
-                setIsQuickAddOpen(false);
-                setRechargeToEdit(null);
-                setIsRechargeModalOpen(true);
-              }}
-              className="w-full p-3 rounded-2xl bg-slate-950/80 hover:bg-slate-800/80 border border-slate-800 flex items-center gap-3 transition-colors text-left"
-            >
-              <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400">
-                <Zap className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white">Nova Recarga Elétrica</p>
-                <p className="text-[10px] text-slate-400">kWh, porcentagens e academia</p>
-              </div>
-            </button>
-
-            {/* Novo Veículo */}
-            <button
-              onClick={() => {
-                setIsQuickAddOpen(false);
-                setVehicleToEdit(null);
-                setIsVehicleModalOpen(true);
-              }}
-              className="w-full p-3 rounded-2xl bg-slate-950/80 hover:bg-slate-800/80 border border-slate-800 flex items-center gap-3 transition-colors text-left"
-            >
-              <div className="p-2.5 rounded-xl bg-sky-500/20 text-sky-400">
-                <Car className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white">Cadastrar Veículo</p>
-                <p className="text-[10px] text-slate-400">Placa, marca, modelo e foto</p>
-              </div>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Formulário Modal de Veículo */}
       <FormVeiculo
         isOpen={isVehicleModalOpen}
+        onClose={() => setIsVehicleModalOpen(false)}
         veiculoToEdit={vehicleToEdit}
-        onClose={() => {
-          setIsVehicleModalOpen(false);
-          setVehicleToEdit(null);
-        }}
         onSave={handleSaveVeiculo}
         onDelete={handleDeleteVeiculo}
       />
 
-      {/* Formulário Modal de Abastecimento */}
       <FormAbastecimento
         isOpen={isFuelModalOpen}
+        onClose={() => setIsFuelModalOpen(false)}
         abastecimentoToEdit={fuelToEdit}
         veiculos={veiculos}
         defaultPlaca={selectedPlaca || undefined}
-        onClose={() => {
-          setIsFuelModalOpen(false);
-          setFuelToEdit(null);
-        }}
         onSave={handleSaveAbastecimento}
         onDelete={handleDeleteAbastecimento}
       />
 
-      {/* Formulário Modal de Recarga */}
       <FormRecarga
         isOpen={isRechargeModalOpen}
+        onClose={() => setIsRechargeModalOpen(false)}
         recargaToEdit={rechargeToEdit}
         veiculos={veiculos}
         defaultPlaca={selectedPlaca || undefined}
-        onClose={() => {
-          setIsRechargeModalOpen(false);
-          setRechargeToEdit(null);
-        }}
         onSave={handleSaveRecarga}
         onDelete={handleDeleteRecarga}
       />
 
-      {/* Modal de Gestão de Usuários Liberados (Apenas Admin) */}
       {isAdmin && (
         <GerenciarUsuariosModal
           isOpen={isUsersModalOpen}
@@ -1303,12 +1640,109 @@ export default function HomePage() {
         />
       )}
 
-      {/* Barra de Navegação Inferior Fixa */}
-      <BottomNav
-        activeTab={activeTab}
-        onSelectTab={(tab) => setActiveTab(tab)}
-        onOpenQuickAdd={() => setIsQuickAddOpen(true)}
-      />
-    </main>
+      {/* =========================================================================
+          MODAL DE AJUDA CONTEXTUAL (?)
+         ========================================================================= */}
+      {isHelpOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#151f32] border border-slate-200/80 dark:border-[#293548] w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2 text-[#ffb800]">
+                <HelpCircle className="w-5 h-5 text-[#ff6200]" />
+                <h3 className="font-extrabold text-base text-slate-900 dark:text-slate-100">
+                  Como usar: {activeScreenTitle}
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsHelpOpen(false)}
+                className="p-1 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs text-slate-600 dark:text-slate-300">
+              {activeTab === 'resumo' && (
+                <>
+                  <p>
+                    • <strong>Visão Geral:</strong> Acompanhe o total investido em reais e o consumo médio global em km/l.
+                  </p>
+                  <p>
+                    • <strong>Ocultar Valores:</strong> Clique no botão com o ícone de olho no topo para mascarar os valores monetários quando estiver em público.
+                  </p>
+                  <p>
+                    • <strong>Filtro de Veículo:</strong> Toque na placa de qualquer veículo na barra superior para filtrar os dados exclusivamente para ele.
+                  </p>
+                </>
+              )}
+
+              {activeTab === 'gasolina' && (
+                <>
+                  <p>
+                    • <strong>Histórico Hierárquico:</strong> Os abastecimentos são agrupados automaticamente por Ano e Mês. Toque nas setas para expandir ou recolher.
+                  </p>
+                  <p>
+                    • <strong>Novo Lançamento:</strong> Clique em "+ Novo Abastecimento" para registrar litros, odômetro e valor total pago.
+                  </p>
+                </>
+              )}
+
+              {activeTab === 'energia' && (
+                <>
+                  <p>
+                    • <strong>Recargas Elétricas:</strong> Visualize todas as cargas realizadas com medição de energia (kWh) e porcentagem de bateria.
+                  </p>
+                  <p>
+                    • <strong>Localização:</strong> Você pode usar o botão "GPS Atual" para salvar o local exato da recarga.
+                  </p>
+                </>
+              )}
+
+              {activeTab === 'graficos' && (
+                <>
+                  <p>
+                    • <strong>Comparativo Mensal:</strong> Acompanhe a evolução mês a mês dos seus gastos em R$ ou do volume (Litros x kWh).
+                  </p>
+                  <p>
+                    • <strong>Proporção:</strong> Veja a divisão percentual entre gastos com combustível e eletricidade para mensurar a economia.
+                  </p>
+                </>
+              )}
+
+              {activeTab === 'academia' && (
+                <>
+                  <p>
+                    • <strong>Controle de Idas:</strong> Esta tela contabiliza as recargas associadas aos treinos na academia, multiplicando cada ida por R$ 60,00.
+                  </p>
+                  <p>
+                    • <strong>Configuração:</strong> Esta aba só aparece se o veículo ativo tiver a opção "Academia" marcada no seu cadastro.
+                  </p>
+                </>
+              )}
+
+              {activeTab === 'veiculos' && (
+                <>
+                  <p>
+                    • <strong>Fotos Públicas Automáticas:</strong> Se você não informar uma foto própria, o LitroWatt IAZ busca uma foto pública sem direitos autorais no Wikimedia Commons.
+                  </p>
+                  <p>
+                    • <strong>Opção Academia:</strong> Marque a opção de academia em cada veículo híbrido/elétrico para habilitar o rastreamento correspondente.
+                  </p>
+                </>
+              )}
+            </div>
+
+            <div className="pt-2">
+              <button
+                onClick={() => setIsHelpOpen(false)}
+                className="w-full py-2.5 rounded-xl bg-[#ff6200] hover:bg-[#ec7000] text-white font-bold text-xs transition-colors shadow-sm"
+              >
+                Entendi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

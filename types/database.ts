@@ -17,6 +17,7 @@ export interface Veiculo {
   marca: string;
   modelo: string;
   foto?: string | null;
+  tem_academia?: boolean | null;
   user_id?: string | null;
   user_email?: string | null;
   created_at?: string;

@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Fuel, Zap, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
+import { LogoBadge } from './LogoBadge';
+import { AlertCircle, Loader2, ShieldCheck } from 'lucide-react';
 
 interface LoginScreenProps {
   errorMessage?: string | null;
@@ -43,36 +44,30 @@ export function LoginScreen({ errorMessage }: LoginScreenProps) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center px-4 py-8 select-none">
+    <div className="min-h-screen bg-[#000d3c] flex flex-col justify-center items-center px-4 py-8 select-none">
       <div className="w-full max-w-sm space-y-6 animate-in fade-in zoom-in-95 duration-200">
         {/* Logo / Header Visual */}
-        <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-tr from-sky-500/20 via-slate-900 to-emerald-500/20 border border-slate-800 shadow-2xl relative">
-            <Fuel className="w-8 h-8 text-sky-400 absolute -translate-x-2 -translate-y-1" />
-            <Zap className="w-7 h-7 text-emerald-400 absolute translate-x-2 translate-y-1" />
-          </div>
+        <div className="text-center space-y-3 flex flex-col items-center">
+          <LogoBadge size="xl" />
 
           <div>
-            <h1 className="text-2xl font-black text-white tracking-tight flex items-center justify-center gap-1.5">
-              IazGas <span className="text-sky-400">&</span> Energia
+            <h1 className="text-2xl font-black text-white tracking-tight">
+              LitroWatt <span className="text-[#ff6200]">IAZ</span>
             </h1>
-            <p className="text-xs text-slate-400 mt-1 font-medium">
-              Controle independente de frotas, combustível e recargas elétricas
-            </p>
           </div>
         </div>
 
         {/* Card de Login */}
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-5">
+        <div className="bg-white dark:bg-[#151f32] border border-slate-200/80 dark:border-[#293548] rounded-3xl p-6 shadow-2xl space-y-5">
           <div className="text-center space-y-1">
-            <h2 className="text-base font-bold text-white">Acesse sua Conta</h2>
-            <p className="text-xs text-slate-400">
+            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Acesse sua Conta</h2>
+            <p className="text-xs text-slate-500">
               Faça login com sua conta do Google autorizada
             </p>
           </div>
 
           {error && (
-            <div className="p-3 rounded-2xl bg-red-950/60 border border-red-800/80 text-red-300 text-xs flex items-center gap-2">
+            <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>{error}</span>
             </div>
@@ -82,12 +77,12 @@ export function LoginScreen({ errorMessage }: LoginScreenProps) {
           <button
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm flex items-center justify-center gap-3 transition-all active:scale-98 shadow-lg shadow-white/5 disabled:opacity-60"
+            className="w-full py-3.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-3 transition-all active:scale-98 shadow-md disabled:opacity-60"
           >
             {loading ? (
-              <Loader2 className="w-5 h-5 animate-spin text-slate-900" />
+              <Loader2 className="w-4 h-4 animate-spin text-white" />
             ) : (
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -106,24 +101,18 @@ export function LoginScreen({ errorMessage }: LoginScreenProps) {
                 />
               </svg>
             )}
-            <span>{loading ? 'Conectando ao Google...' : 'Continuar com o Google'}</span>
+            <span>Entrar com Google</span>
           </button>
 
-          {/* Aviso de Segurança e Acesso Restrito */}
-          <div className="pt-2 border-t border-slate-800/80 flex items-start gap-2.5 text-[11px] text-slate-500">
-            <ShieldCheck className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
-            <span>
-              O acesso é restrito a emails autorizados com período de vigência ativo. Cada usuário gerencia seus próprios veículos e registros de forma independente.
-            </span>
+          {/* Segurança / Informações */}
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-1.5 text-[11px] text-slate-500 font-medium">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#ff6200]" />
+            <span>Acesso individual protegido e isolado</span>
           </div>
         </div>
-
-        {/* Rodapé */}
-        <p className="text-[11px] text-center text-slate-600">
-          IazGas & Energia • Sistema Privado de Gestão
-        </p>
       </div>
     </div>
   );
 }
+
 export default LoginScreen;

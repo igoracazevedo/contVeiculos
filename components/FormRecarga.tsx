@@ -2,8 +2,26 @@
 
 import React, { useState, useEffect } from 'react';
 import { Recarga, Veiculo } from '@/types/database';
-import { formatCurrency, formatNumber, dateToInputDateTime, formatToDbDate, formatToDbDateTime } from '@/lib/utils';
-import { Zap, X, Save, Trash2, MapPin, Dumbbell, AlertCircle, Loader2 } from 'lucide-react';
+import {
+  formatCurrency,
+  formatNumber,
+  dateToInputDateTime,
+  formatToDbDate,
+  formatToDbDateTime,
+  formatCurrencyMask,
+  parseCurrencyMask,
+} from '@/lib/utils';
+import {
+  Zap,
+  X,
+  Save,
+  Trash2,
+  MapPin,
+  Dumbbell,
+  AlertCircle,
+  Loader2,
+  BatteryCharging,
+} from 'lucide-react';
 
 interface FormRecargaProps {
   recargaToEdit?: Recarga | null;
@@ -29,7 +47,7 @@ export function FormRecarga({
   const [percInicial, setPercInicial] = useState<string>('');
   const [percFinal, setPercFinal] = useState<string>('');
   const [kwa, setKwa] = useState<string>('');
-  const [valor, setValor] = useState<string>('');
+  const [valorMasked, setValorMasked] = useState<string>('');
   const [local, setLocal] = useState('');
   const [academia, setAcademia] = useState(false);
 
@@ -45,7 +63,11 @@ export function FormRecarga({
       setPercInicial(String(recargaToEdit.perc_inicial ?? ''));
       setPercFinal(String(recargaToEdit.perc_final ?? ''));
       setKwa(String(recargaToEdit.kwa ?? ''));
-      setValor(String(recargaToEdit.valor ?? ''));
+      setValorMasked(
+        recargaToEdit.valor !== undefined && recargaToEdit.valor !== null
+          ? formatCurrencyMask(Math.round(recargaToEdit.valor * 100))
+          : ''
+      );
       setLocal(recargaToEdit.local || '');
       setAcademia(Boolean(recargaToEdit.academia));
     } else {
@@ -55,7 +77,7 @@ export function FormRecarga({
       setPercInicial('20');
       setPercFinal('100');
       setKwa('');
-      setValor('');
+      setValorMasked('0,00');
       setLocal('');
       setAcademia(false);
     }
@@ -66,6 +88,10 @@ export function FormRecarga({
   if (!isOpen) return null;
 
   const isEdit = Boolean(recargaToEdit);
+
+  // Verifica se o veículo selecionado possui o recurso de academia habilitado
+  const selectedVehicle = veiculos.find((v) => v.placa === placa);
+  const vehicleHasAcademia = Boolean(selectedVehicle?.tem_academia);
 
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
@@ -88,6 +114,11 @@ export function FormRecarga({
     );
   };
 
+  const handleValorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const masked = formatCurrencyMask(e.target.value);
+    setValorMasked(masked);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -100,50 +131,49 @@ export function FormRecarga({
     const numInicial = parseFloat(percInicial.replace(',', '.'));
     const numFinal = parseFloat(percFinal.replace(',', '.'));
     const numKwa = parseFloat(kwa.replace(',', '.'));
-    const numValor = parseFloat(valor.replace(',', '.')) || 0;
+    const numValor = parseCurrencyMask(valorMasked);
 
     if (isNaN(numInicial) || numInicial < 0 || numInicial > 100) {
-      setError('Percentual inicial deve estar entre 0% e 100%.');
+      setError('A porcentagem inicial da bateria deve ser entre 0% e 100%.');
       return;
     }
     if (isNaN(numFinal) || numFinal < 0 || numFinal > 100) {
-      setError('Percentual final deve estar entre 0% e 100%.');
+      setError('A porcentagem final da bateria deve ser entre 0% e 100%.');
       return;
     }
     if (numFinal < numInicial) {
-      setError('O percentual final não pode ser menor que o inicial.');
+      setError('A porcentagem final não pode ser menor que a inicial.');
       return;
     }
     if (isNaN(numKwa) || numKwa < 0) {
-      setError('Informe a quantidade de energia (kWh/kwa) recarregada.');
+      setError('Informe a quantidade de kWh recarregada.');
       return;
     }
 
+    const dateObj = new Date(dataHora || new Date().toISOString());
+
     try {
       setLoading(true);
-      const chosenDate = dataHora ? new Date(dataHora) : new Date();
-      const strData = formatToDbDate(chosenDate);
-      const strDataHora = formatToDbDateTime(chosenDate);
-
       await onSave(
         {
-          ...(isEdit && recargaToEdit ? { id: recargaToEdit.id } : {}),
+          id: recargaToEdit?.id,
           placa,
-          data_hora: strDataHora,
-          data: strData,
+          data_hora: formatToDbDateTime(dateObj),
+          data: formatToDbDate(dateObj),
           perc_inicial: numInicial,
           perc_final: numFinal,
           kwa: numKwa,
           valor: numValor,
           local: local.trim() || null,
-          academia,
+          // Se o veículo não tiver academia habilitada, salva false
+          academia: vehicleHasAcademia ? academia : false,
         },
         isEdit
       );
       onClose();
     } catch (err: any) {
       console.error(err);
-      setError(err?.message || 'Erro ao salvar recarga.');
+      setError(err?.message || 'Erro ao registrar recarga.');
     } finally {
       setLoading(false);
     }
@@ -156,241 +186,274 @@ export function FormRecarga({
       await onDelete(recargaToEdit.id);
       onClose();
     } catch (err: any) {
-      setError(err?.message || 'Erro ao excluir registro.');
+      setError(err?.message || 'Erro ao excluir recarga.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm p-4 flex items-center justify-center overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-150">
-        {/* Cabeçalho */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-800">
-          <div className="flex items-center gap-2 text-emerald-400">
-            <Zap className="w-5 h-5" />
-            <h3 className="font-bold text-white text-base">
-              {isEdit ? 'Editar Recarga Elétrica' : 'Nova Recarga Elétrica'}
-            </h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-[#151f32] border border-slate-200/80 dark:border-[#293548] w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+        {/* Cabeçalho Topo Azul-Marinho IAZ */}
+        <div className="bg-[#000d3c] text-white px-5 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-white/10 text-blue-400">
+              <Zap className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-extrabold text-base tracking-tight text-white">
+                {isEdit ? 'Editar Recarga' : 'Nova Recarga Elétrica'}
+              </h3>
+              <p className="text-[11px] text-slate-300">
+                {isEdit ? 'Atualize os dados da recarga' : 'LitroWatt IAZ • Gestão de Energia'}
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-full hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Formulário */}
-        <form onSubmit={handleSubmit} className="p-4 space-y-3.5">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto">
           {error && (
-            <div className="p-3 rounded-xl bg-red-950/50 border border-red-800/60 text-red-300 text-xs flex items-center gap-2">
+            <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
-          {/* Placa & Data/Hora */}
+          {/* Veículo e Data */}
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Veículo</label>
-              {veiculos.length > 0 ? (
-                <select
-                  value={placa}
-                  onChange={(e) => setPlaca(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:ring-2 focus:ring-emerald-500 font-medium"
-                >
-                  {veiculos.map((v) => (
-                    <option key={v.placa} value={v.placa}>
-                      {v.placa} - {v.modelo}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  type="text"
-                  value={placa}
-                  onChange={(e) => setPlaca(e.target.value.toUpperCase())}
-                  placeholder="Placa"
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:ring-2 focus:ring-emerald-500 font-mono uppercase"
-                />
-              )}
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                Veículo *
+              </label>
+              <select
+                value={placa}
+                onChange={(e) => setPlaca(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+              >
+                {veiculos.map((v) => (
+                  <option key={v.placa} value={v.placa}>
+                    {v.placa} - {v.modelo}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Data e Hora</label>
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                Data e Hora *
+              </label>
               <input
                 type="datetime-local"
                 value={dataHora}
                 onChange={(e) => setDataHora(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
               />
             </div>
           </div>
 
-          {/* % Inicial e % Final */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">% Inicial</label>
-              <div className="relative">
+          {/* Bateria: % Inicial e % Final */}
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1e293b] border border-slate-200 dark:border-[#293548] space-y-2.5">
+            <span className="text-[11px] font-bold uppercase tracking-wide text-slate-500 flex items-center gap-1.5">
+              <BatteryCharging className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              Nível da Bateria
+            </span>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <span className="text-[10px] text-slate-500 font-medium">Bateria Inicial (%)</span>
                 <input
                   type="number"
                   min="0"
                   max="100"
+                  placeholder="20"
                   value={percInicial}
                   onChange={(e) => setPercInicial(e.target.value)}
-                  placeholder="20"
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-sm focus:ring-2 focus:ring-emerald-500 font-medium pr-7"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
                 />
-                <span className="absolute right-3 top-2.5 text-xs text-slate-500">%</span>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">% Final</label>
-              <div className="relative">
+              <div className="space-y-1">
+                <span className="text-[10px] text-slate-500 font-medium">Bateria Final (%)</span>
                 <input
                   type="number"
                   min="0"
                   max="100"
+                  placeholder="100"
                   value={percFinal}
                   onChange={(e) => setPercFinal(e.target.value)}
-                  placeholder="100"
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-sm focus:ring-2 focus:ring-emerald-500 font-medium pr-7"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
                 />
-                <span className="absolute right-3 top-2.5 text-xs text-slate-500">%</span>
               </div>
             </div>
           </div>
 
-          {/* kWh (kwa) e Valor Total (R$) */}
+          {/* Energia (kWh) e Valor Total (R$) com Máscara Brasileira */}
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Energia (kWh / kwa)</label>
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                Energia (kWh) *
+              </label>
               <input
-                type="number"
-                step="0.01"
+                type="text"
+                inputMode="decimal"
+                placeholder="Ex: 15,5"
                 value={kwa}
                 onChange={(e) => setKwa(e.target.value)}
-                placeholder="Ex: 38.50"
-                className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-sm focus:ring-2 focus:ring-emerald-500 font-medium"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Valor Total (R$)</label>
-              <input
-                type="number"
-                step="0.01"
-                value={valor}
-                onChange={(e) => setValor(e.target.value)}
-                placeholder="Ex: 0.00 ou 45.00"
-                className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-sm focus:ring-2 focus:ring-emerald-500 font-medium"
-              />
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                Valor Total (R$) *
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-2.5 text-xs font-bold text-slate-400">R$</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="0,00"
+                  value={valorMasked}
+                  onChange={handleValorChange}
+                  className="w-full px-3.5 py-2.5 pl-9 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Opção Academia (Highlight e Toggle) */}
-          <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
-                <Dumbbell className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-slate-200">Ida à Academia</p>
-                <p className="text-[10px] text-slate-400">Inclui no cálculo mensal de R$ 60 por ida</p>
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={academia}
-                onChange={(e) => setAcademia(e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-            </label>
-          </div>
-
-          {/* Local e GPS */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-semibold text-slate-300">Local ou Coordenadas GPS</label>
+          {/* Local da Recarga (input + datalist) */}
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 flex items-center justify-between">
+              <span>Local ou Coordenadas (Opcional)</span>
               <button
                 type="button"
                 onClick={handleGetLocation}
                 disabled={gettingLocation}
-                className="text-[11px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors"
+                className="text-[11px] font-bold text-[#ff6200] hover:text-[#ec7000] flex items-center gap-1"
               >
                 {gettingLocation ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
                 ) : (
                   <MapPin className="w-3 h-3" />
                 )}
-                Obter GPS Atual
+                <span>GPS Atual</span>
               </button>
-            </div>
+            </label>
             <input
               type="text"
+              list="locais-recarga"
+              placeholder="Ex: Garagem Residencial, Estação de Recarga..."
               value={local}
               onChange={(e) => setLocal(e.target.value)}
-              placeholder="Ex: Eletroposto Shopping ou -23.5505, -46.6333"
-              className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
             />
+            <datalist id="locais-recarga">
+              <option value="Garagem Residencial" />
+              <option value="Academia" />
+              <option value="Posto Shell Recharge" />
+              <option value="Shopping Center" />
+              <option value="Trabalho / Escritório" />
+            </datalist>
           </div>
 
-          {/* Ações */}
-          <div className="pt-2 flex items-center gap-2">
-            {isEdit && onDelete && (
-              <button
-                type="button"
-                onClick={() => setShowConfirmDelete(true)}
-                className="p-2.5 rounded-xl border border-red-900/60 bg-red-950/30 text-red-400 hover:bg-red-900/50 transition-colors"
-                title="Excluir recarga"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
+          {/* CHECKBOX ACADEMIA: CONDICIONADO AO VEÍCULO SELECIONADO TER ACADEMIA HABILITADA */}
+          {vehicleHasAcademia && (
+            <div className="p-3.5 rounded-2xl bg-orange-50/60 dark:bg-[#1e293b] border border-orange-200/80 dark:border-[#293548] space-y-2 animate-in fade-in">
+              <label className="flex items-center justify-between cursor-pointer">
+                <div className="flex items-center gap-2.5">
+                  <div
+                    className={`p-2 rounded-xl ${
+                      academia
+                        ? 'bg-[#ff6200] text-white shadow-sm'
+                        : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
+                    }`}
+                  >
+                    <Dumbbell className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 dark:text-slate-100 block">
+                      Recarga na Academia
+                    </span>
+                    <span className="text-[10px] text-slate-500 block">
+                      Contabiliza idas e saldo da academia
+                    </span>
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={academia}
+                  onChange={(e) => setAcademia(e.target.checked)}
+                  className="w-5 h-5 rounded-lg text-[#ff6200] focus:ring-[#ff6200] border-slate-300 dark:border-slate-600 cursor-pointer"
+                />
+              </label>
+            </div>
+          )}
+
+          {/* Botões de Ação */}
+          <div className="pt-2 flex items-center justify-between gap-3">
+            {isEdit && onDelete ? (
+              showConfirmDelete ? (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={loading}
+                    className="px-3 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition-all"
+                  >
+                    Confirmar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmDelete(false)}
+                    className="px-3 py-2.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs rounded-xl"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmDelete(true)}
+                  className="px-3 py-2.5 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Excluir</span>
+                </button>
+              )
+            ) : (
+              <div />
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50"
-            >
-              <Save className="w-4 h-4" />
-              {loading ? 'Salvando...' : isEdit ? 'Salvar Alterações' : 'Registrar Recarga'}
-            </button>
-          </div>
-        </form>
-
-        {/* Modal Confirmação de Exclusão */}
-        {showConfirmDelete && (
-          <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-sm p-4 flex flex-col justify-center items-center text-center">
-            <AlertCircle className="w-12 h-12 text-red-400 mb-2" />
-            <h4 className="font-bold text-white text-base">Excluir recarga?</h4>
-            <p className="text-xs text-slate-400 max-w-xs mt-1 mb-4">
-              Esta ação removerá esta recarga e recalculará os totais de energia e academia.
-            </p>
-            <div className="flex gap-2 w-full max-w-xs">
+            <div className="flex items-center gap-2 ml-auto">
               <button
                 type="button"
-                onClick={() => setShowConfirmDelete(false)}
-                className="flex-1 py-2 text-xs font-semibold rounded-lg bg-slate-800 text-slate-300"
+                onClick={onClose}
+                disabled={loading}
+                className="px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs rounded-xl hover:bg-slate-50 transition-colors"
               >
                 Cancelar
               </button>
               <button
-                type="button"
-                onClick={handleDelete}
-                className="flex-1 py-2 text-xs font-semibold rounded-lg bg-red-600 text-white"
+                type="submit"
+                disabled={loading}
+                className="px-5 py-2.5 bg-[#ff6200] hover:bg-[#ec7000] text-white font-bold text-xs rounded-xl shadow-md shadow-orange-500/20 flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
               >
-                Sim, Excluir
+                <Save className="w-4 h-4" />
+                <span>{loading ? 'Salvando...' : 'Salvar Recarga'}</span>
               </button>
             </div>
           </div>
-        )}
+        </form>
       </div>
     </div>
   );
 }
+
 export default FormRecarga;

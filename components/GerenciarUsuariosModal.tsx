@@ -458,7 +458,7 @@ export function GerenciarUsuariosModal({
                           onClick={() => handleToggleActive(u)}
                           className={`p-1.5 rounded-lg transition-colors ${
                             u.ativo
-                              ? 'text-emerald-400 hover:bg-emerald-500/10'
+                              ? 'text-blue-600 dark:text-blue-400 hover:bg-blue-500/10'
                               : 'text-slate-500 hover:bg-slate-800'
                           }`}
                           title={u.ativo ? 'Desativar acesso' : 'Ativar acesso'}
@@ -501,8 +501,8 @@ export function GerenciarUsuariosModal({
                         ) : isNotStarted ? (
                           <span className="text-sky-400 font-medium">Inicia em breve</span>
                         ) : (
-                          <span className="text-emerald-400 font-semibold flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
+                          <span className="text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 inline-block animate-pulse" />
                             Liberado
                           </span>
                         )}
