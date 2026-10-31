@@ -948,7 +948,7 @@ export default function HomePage() {
 
           {/* Centro: Nome do App sem slogans */}
           <div className="flex items-center gap-2">
-            <LogoBadge size="sm" />
+            <LogoBadge size="sm" className="rounded-lg bg-white p-1 shadow-sm" />
             <span className="text-base sm:text-lg font-black tracking-tight text-white leading-none">
               LitroWatt <span className="text-[#ff6200]">IAZ</span>
             </span>
