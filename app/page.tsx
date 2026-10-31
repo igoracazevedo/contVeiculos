@@ -1038,7 +1038,7 @@ export default function HomePage() {
           {/* =========================================================================
               4. MENU DE ATALHOS EM SQUIRCLES (NAVEGAÇÃO PRINCIPAL EM TODAS AS TELAS)
              ========================================================================= */}
-          <div className="flex items-center justify-between sm:justify-start sm:gap-4 w-full py-2 px-0.5">
+          <div className="flex items-center justify-between sm:justify-center sm:gap-4 w-full py-2 px-0.5">
             {navItems.map((item) => {
               const isActive = activeTab === item.id;
               const IconComponent = item.icon;
