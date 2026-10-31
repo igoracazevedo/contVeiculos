@@ -948,10 +948,12 @@ export default function HomePage() {
 
           {/* Centro: Nome do App sem slogans */}
           <div className="flex items-center gap-2">
-            <LogoBadge size="sm" className="rounded-lg bg-white p-1 shadow-sm" />
-            <span className="text-base sm:text-lg font-black tracking-tight text-white leading-none">
-              LitroWatt <span className="text-[#ff6200]">IAZ</span>
-            </span>
+            <div className="flex items-center gap-2 rounded-2xl bg-white px-2 py-1 shadow-sm">
+              <LogoBadge size="sm" />
+              <span className="text-base sm:text-lg font-black tracking-tight text-[#000d3c] leading-none">
+                LitroWatt <span className="text-[#ff6200]">IAZ</span>
+              </span>
+            </div>
           </div>
 
           {/* Direita: Ícones Redondos nesta ordem: Buscar · Ajuda (?) em dourado · Tema · Sincronizar */}
