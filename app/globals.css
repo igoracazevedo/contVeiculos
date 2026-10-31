@@ -147,3 +147,36 @@ html:not(.dark):not(.dark-theme) textarea:focus {
   border-color: rgba(255, 98, 0, 0.55);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 3px rgba(255, 98, 0, 0.18);
 }
+
+/* ==========================================
+   PÍLULA DO LOGO (padrão NotaSync)
+   Claro: vidro claro com texto azul-marinho · Escuro: grafite com texto azul claro
+   ========================================== */
+.pilula {
+  background-color: rgba(255, 255, 255, 0.55) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 8px 28px rgba(15, 23, 42, 0.08);
+}
+.pilula .pilula-texto {
+  color: #000d3c !important;
+}
+html.dark .pilula,
+html.dark-theme .pilula,
+body.dark .pilula,
+body.dark-theme .pilula,
+.dark .pilula,
+.dark-theme .pilula {
+  background-color: #151f32 !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+html.dark .pilula .pilula-texto,
+html.dark-theme .pilula .pilula-texto,
+body.dark .pilula .pilula-texto,
+body.dark-theme .pilula .pilula-texto,
+.dark .pilula .pilula-texto,
+.dark-theme .pilula .pilula-texto {
+  color: #bfdbfe !important;
+}

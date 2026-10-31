@@ -948,9 +948,9 @@ export default function HomePage() {
 
           {/* Centro: Nome do App sem slogans */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 rounded-2xl bg-white px-2 py-1 shadow-sm">
+            <div className="pilula flex items-center gap-2 rounded-2xl bg-white px-2.5 py-1.5 shadow-sm">
               <LogoBadge size="sm" />
-              <span className="text-base sm:text-lg font-black tracking-tight text-[#000d3c] leading-none">
+              <span className="pilula-texto text-base sm:text-lg font-black tracking-tight text-[#000d3c] leading-none">
                 LitroWatt <span className="text-[#ff6200]">IAZ</span>
               </span>
             </div>
