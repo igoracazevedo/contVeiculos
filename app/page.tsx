@@ -978,6 +978,16 @@ export default function HomePage() {
               <HelpCircle className="w-4 h-4" />
             </button>
 
+            {/* Ocultar / mostrar valores monetários */}
+            <button
+              onClick={toggleHideValues}
+              className="p-2 rounded-full hover:bg-white/10 text-white transition-colors"
+              title={hideValues ? 'Mostrar valores monetários' : 'Ocultar valores monetários'}
+              aria-label="Ocultar ou mostrar valores"
+            >
+              {hideValues ? <EyeOff className="w-4 h-4 text-[#ff6200]" /> : <Eye className="w-4 h-4" />}
+            </button>
+
             {/* 3. Tema (lua/sol) */}
             <button
               onClick={toggleTheme}
@@ -1024,33 +1034,6 @@ export default function HomePage() {
               )}
             </div>
           )}
-
-          {/* =========================================================================
-              3. CABEÇALHO DA TELA (Título à esquerda, Botão de Olho à direita)
-             ========================================================================= */}
-          <div className="flex items-center justify-between pt-1">
-            <div>
-              <h2 className="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
-                {activeScreenTitle}
-              </h2>
-            </div>
-
-            {/* Botão de Olho: Ocultar / Mostrar Valores Monetários */}
-            <button
-              onClick={toggleHideValues}
-              className={`p-2 rounded-xl border flex items-center gap-1.5 text-xs font-semibold transition-all ${
-                hideValues
-                  ? 'bg-[#ff6200] text-white border-[#ff6200] shadow-sm'
-                  : 'bg-white dark:bg-[#151f32] text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-[#293548] hover:border-[#ff6200]'
-              }`}
-              title={hideValues ? 'Mostrar valores monetários' : 'Ocultar valores monetários'}
-            >
-              {hideValues ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              <span className="hidden sm:inline">
-                {hideValues ? 'Valores Ocultos' : 'Ocultar Valores'}
-              </span>
-            </button>
-          </div>
 
           {/* =========================================================================
               4. MENU DE ATALHOS EM SQUIRCLES (NAVEGAÇÃO PRINCIPAL EM TODAS AS TELAS)
