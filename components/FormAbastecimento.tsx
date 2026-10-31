@@ -1,5 +1,6 @@
 'use client';
 
+import ComboInput from './ComboInput';
 import React, { useState, useEffect } from 'react';
 import { Abastecimento, TipoGasolina, Veiculo } from '@/types/database';
 import {
@@ -351,21 +352,13 @@ export function FormAbastecimento({
                 <span>GPS Atual</span>
               </button>
             </label>
-            <input
-              type="text"
-              list="postos-sugestoes"
+            <ComboInput
               placeholder="Ex: Posto Shell, Posto Ipiranga..."
               value={local}
-              onChange={(e) => setLocal(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+              onChange={setLocal}
+              options={['Posto Shell', 'Posto Ipiranga', 'Posto Petrobras / BR', 'Posto Ale', 'Auto Posto Rodovia']}
+              inputClassName="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
             />
-            <datalist id="postos-sugestoes">
-              <option value="Posto Shell" />
-              <option value="Posto Ipiranga" />
-              <option value="Posto Petrobras / BR" />
-              <option value="Posto Ale" />
-              <option value="Auto Posto Rodovia" />
-            </datalist>
           </div>
 
           {/* Botões de Ação */}

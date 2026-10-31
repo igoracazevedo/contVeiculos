@@ -1,5 +1,6 @@
 'use client';
 
+import ComboInput from './ComboInput';
 import React, { useState, useEffect } from 'react';
 import { Veiculo } from '@/types/database';
 import {
@@ -316,51 +317,26 @@ export function FormVeiculo({
               <label className="text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Marca *
               </label>
-              <input
-                type="text"
-                list="marcas-sugestoes"
+              <ComboInput
                 placeholder="Ex: BYD, Caoa Chery"
                 value={marca}
-                onChange={(e) => setMarca(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+                onChange={setMarca}
+                options={['BYD', 'Caoa Chery', 'GWM', 'Toyota', 'Renault', 'Jeep', 'Volvo', 'Volkswagen', 'Chevrolet', 'Fiat']}
+                inputClassName="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
               />
-              <datalist id="marcas-sugestoes">
-                <option value="BYD" />
-                <option value="Caoa Chery" />
-                <option value="GWM" />
-                <option value="Toyota" />
-                <option value="Renault" />
-                <option value="Jeep" />
-                <option value="Volvo" />
-                <option value="Volkswagen" />
-                <option value="Chevrolet" />
-                <option value="Fiat" />
-              </datalist>
             </div>
 
             <div className="space-y-1">
               <label className="text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Modelo *
               </label>
-              <input
-                type="text"
-                list="modelos-sugestoes"
+              <ComboInput
                 placeholder="Ex: Song Pro, Tiggo 5x"
                 value={modelo}
-                onChange={(e) => setModelo(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+                onChange={setModelo}
+                options={['Song Pro GS', 'Song Plus DM-i', 'Tiggo 5x Sport', 'Tiggo 7 Pro', 'Tiggo 8 Pro PHEV', 'Haval H6 HEV/PHEV', 'Dolphin EV', 'Seal EV', 'Corolla Cross Hybrid']}
+                inputClassName="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
               />
-              <datalist id="modelos-sugestoes">
-                <option value="Song Pro GS" />
-                <option value="Song Plus DM-i" />
-                <option value="Tiggo 5x Sport" />
-                <option value="Tiggo 7 Pro" />
-                <option value="Tiggo 8 Pro PHEV" />
-                <option value="Haval H6 HEV/PHEV" />
-                <option value="Dolphin EV" />
-                <option value="Seal EV" />
-                <option value="Corolla Cross Hybrid" />
-              </datalist>
             </div>
           </div>
 
