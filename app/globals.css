@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --bg-page: #000d3c;
+  --bg-page: #ffe600;
   --bg-sheet: #f4f5f7;
   --bg-card: #ffffff;
   --bg-surface: #ffffff;
@@ -37,7 +37,7 @@ body {
 /* Modo Escuro (.dark e .dark-theme) */
 .dark,
 .dark-theme {
-  --bg-page: #000d3c;
+  --bg-page: #ffe600;
   --bg-sheet: #0b1120;
   --bg-card: #151f32;
   --bg-surface: #1e293b;

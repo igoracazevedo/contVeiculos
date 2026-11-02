@@ -790,7 +790,7 @@ export default function HomePage() {
   const firstName = userName.split(' ')[0];
 
   return (
-    <div className="min-h-screen bg-[#000d3c] text-slate-800 dark:text-slate-200">
+    <div className="min-h-screen bg-[#ffe600] text-slate-800 dark:text-slate-200">
       {/* Toast Padrão IAZ: Canto Superior Direito, Azul-Marinho com borda Laranja */}
       {toastMessage && (
         <div className="fixed top-4 right-4 z-50 max-w-sm w-full animate-in slide-in-from-top-3 duration-200">
@@ -822,13 +822,13 @@ export default function HomePage() {
       {/* =========================================================================
           1. TOPO AZUL-MARINHO (#000d3c, pb-7)
          ========================================================================= */}
-      <header className="bg-[#000d3c] text-white pt-4 pb-8 px-4 sm:px-6 relative z-30">
+      <header className="bg-[#ffe600] text-slate-900 pt-4 pb-8 px-4 sm:px-6 relative z-30">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           {/* Esquerda: Avatar do usuário (+ pill com primeiro nome no >=sm) */}
           <div className="relative">
             <button
               onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="flex items-center gap-2.5 p-1 rounded-full hover:bg-white/10 transition-colors focus:outline-none"
+              className="flex items-center gap-2.5 p-1 rounded-full hover:bg-black/10 transition-colors focus:outline-none"
               title="Meu perfil"
             >
               {userAvatar ? (
@@ -845,7 +845,7 @@ export default function HomePage() {
               )}
 
               {/* Pill com primeiro nome e identificador no >=sm */}
-              <div className="hidden sm:flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-full text-xs font-bold text-white">
+              <div className="hidden sm:flex items-center gap-1.5 bg-black/10 px-2.5 py-1 rounded-full text-xs font-bold text-slate-900">
                 <span>{firstName}</span>
                 {isAdmin && (
                   <span className="bg-[#ff6200] text-white text-[9px] px-1.5 py-0.2 rounded font-extrabold uppercase">
@@ -962,7 +962,7 @@ export default function HomePage() {
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
               className={`p-2 rounded-full transition-colors ${
-                isSearchOpen ? 'bg-[#ff6200] text-white' : 'hover:bg-white/10 text-white'
+                isSearchOpen ? 'bg-[#ff6200] text-white' : 'hover:bg-black/10 text-slate-900'
               }`}
               title="Buscar registros"
             >
@@ -972,7 +972,7 @@ export default function HomePage() {
             {/* 2. Ajuda (?) em dourado #ffb800 */}
             <button
               onClick={() => setIsHelpOpen(true)}
-              className="p-2 rounded-full hover:bg-white/10 text-[#ffb800] transition-colors"
+              className="p-2 rounded-full hover:bg-black/10 text-slate-900 transition-colors"
               title="Como usar esta tela"
             >
               <HelpCircle className="w-4 h-4" />
@@ -981,7 +981,7 @@ export default function HomePage() {
             {/* Ocultar / mostrar valores monetários */}
             <button
               onClick={toggleHideValues}
-              className="p-2 rounded-full hover:bg-white/10 text-white transition-colors"
+              className="p-2 rounded-full hover:bg-black/10 text-slate-900 transition-colors"
               title={hideValues ? 'Mostrar valores monetários' : 'Ocultar valores monetários'}
               aria-label="Ocultar ou mostrar valores"
             >
@@ -991,17 +991,17 @@ export default function HomePage() {
             {/* 3. Tema (lua/sol) */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-full hover:bg-white/10 text-white transition-colors"
+              className="p-2 rounded-full hover:bg-black/10 text-slate-900 transition-colors"
               title={isDark ? 'Ativar tema claro' : 'Ativar tema escuro'}
             >
-              {isDark ? <Sun className="w-4 h-4 text-[#ffb800]" /> : <Moon className="w-4 h-4" />}
+              {isDark ? <Sun className="w-4 h-4 text-slate-900" /> : <Moon className="w-4 h-4" />}
             </button>
 
             {/* 4. Sincronizar */}
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="p-2 rounded-full hover:bg-white/10 text-white transition-colors"
+              className="p-2 rounded-full hover:bg-black/10 text-slate-900 transition-colors"
               title="Sincronizar dados com o Supabase"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-[#ff6200]' : ''}`} />
