@@ -83,7 +83,8 @@ export function FormRecarga({
         setLocal(recargaToEdit.local || '');
         setAcademia(Boolean(recargaToEdit.academia));
       } else {
-        const initialPlaca = defaultPlaca || (veiculos.length > 0 ? veiculos[0].placa : '');
+        const eletricos = veiculos.filter((v) => v.tem_carregamento !== false);
+        const initialPlaca = defaultPlaca || (eletricos.length > 0 ? eletricos[0].placa : '');
         setPlaca(initialPlaca);
         setDataHora(dateToInputDateTime(new Date().toISOString()));
         setPercInicial('20');
@@ -251,7 +252,7 @@ export function FormRecarga({
                 onChange={(e) => setPlaca(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
               >
-                {veiculos.map((v) => (
+                {veiculos.filter((v) => v.tem_carregamento !== false || v.placa === placa).map((v) => (
                   <option key={v.placa} value={v.placa}>
                     {v.placa} - {v.modelo}
                   </option>

@@ -5,6 +5,7 @@ import { Veiculo, Abastecimento, Recarga } from '@/types/database';
 import {
   formatCurrency,
   calcularMediaKmL,
+  temCarregamento,
   formatNumber,
 } from '@/lib/utils';
 import { getVehicleDisplayPhoto, getDefaultVehiclePhoto } from '@/lib/vehiclePhotos';
@@ -39,6 +40,7 @@ export function CarCard({
 
   // Média de consumo km/l
   const mediaKmL = calcularMediaKmL(veiculoAbastecimentos);
+  const eletrico = temCarregamento(veiculo);
 
   // Totais
   const totalGastoGasolina = veiculoAbastecimentos.reduce(
@@ -124,7 +126,7 @@ export function CarCard({
           </div>
 
           {/* Badge de Academia se habilitado no veículo */}
-          {veiculo.tem_academia && (
+          {eletrico && veiculo.tem_academia && (
             <div className="flex items-center gap-1 bg-[#000d3c]/85 border border-[#ff6200]/40 px-2 py-0.5 rounded-lg text-[10px] font-bold text-[#ffb800] backdrop-blur-sm">
               <Dumbbell className="w-3 h-3 text-[#ff6200]" />
               <span>Academia</span>
@@ -189,7 +191,7 @@ export function CarCard({
         </div>
 
         {/* Divisão Gasolina x Energia */}
-        <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100 dark:border-slate-800 text-xs">
+        <div className={`grid ${eletrico ? "grid-cols-2" : "grid-cols-1"} gap-2 pt-1 border-t border-slate-100 dark:border-slate-800 text-xs`}>
           <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/80">
             <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400 mb-0.5 text-[10px] font-bold">
               <Fuel className="w-3 h-3" />
@@ -203,6 +205,7 @@ export function CarCard({
             </p>
           </div>
 
+          {eletrico && (
           <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/80">
             <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400 mb-0.5 text-[10px] font-bold">
               <Zap className="w-3 h-3" />
@@ -215,6 +218,7 @@ export function CarCard({
               {veiculoRecargas.length} {veiculoRecargas.length === 1 ? 'recarga' : 'recargas'}
             </p>
           </div>
+          )}
         </div>
       </div>
     </div>

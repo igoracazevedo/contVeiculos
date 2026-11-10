@@ -7,6 +7,7 @@ import {
   formatCurrency,
   formatNumber,
   calcularMediaKmL,
+  temCarregamento,
   formatDateBR,
   parseDate,
   getMonthName,
@@ -414,10 +415,27 @@ export default function HomePage() {
   const hasAcademiaEnabled = useMemo(() => {
     if (selectedPlaca) {
       const v = veiculos.find((veic) => veic.placa === selectedPlaca);
-      return Boolean(v?.tem_academia);
+      return Boolean(v?.tem_academia) && temCarregamento(v);
     }
-    return veiculos.some((v) => v.tem_academia);
+    return veiculos.some((v) => v.tem_academia && temCarregamento(v));
   }, [veiculos, selectedPlaca]);
+
+  // Parte elétrica (aba Energia, recargas, gráficos de kWh): só aparece se o veículo
+  // selecionado tem carregamento; sem seleção, se pelo menos um veículo tiver.
+  const hasEletrico = useMemo(() => {
+    if (veiculos.length === 0) return true;
+    if (selectedPlaca) {
+      return temCarregamento(veiculos.find((veic) => veic.placa === selectedPlaca));
+    }
+    return veiculos.some((v) => temCarregamento(v));
+  }, [veiculos, selectedPlaca]);
+
+  // Se a aba Energia ficou indisponível, volta para o resumo
+  useEffect(() => {
+    if (activeTab === 'energia' && !hasEletrico) {
+      setActiveTab('resumo');
+    }
+  }, [activeTab, hasEletrico]);
 
   // Se academia estiver inativa e o usuário estiver nela, redireciona para resumo
   useEffect(() => {
@@ -525,7 +543,7 @@ export default function HomePage() {
       });
     }
 
-    for (const r of baseFilteredRecargas) {
+    for (const r of hasEletrico ? baseFilteredRecargas : []) {
       list.push({
         type: 'energia',
         data: r,
@@ -535,7 +553,7 @@ export default function HomePage() {
 
     list.sort((a, b) => b.time - a.time);
     return list.slice(0, 5);
-  }, [baseFilteredAbastecimentos, baseFilteredRecargas]);
+  }, [baseFilteredAbastecimentos, baseFilteredRecargas, hasEletrico]);
 
   // Manipulação do Seletor de Período
   const handlePrevMonth = () => {
@@ -578,6 +596,7 @@ export default function HomePage() {
         modelo: data.modelo,
         foto: data.foto,
         tem_academia: data.tem_academia ?? false,
+        tem_carregamento: data.tem_carregamento ?? true,
       };
       if (currentEmail) updatePayload.user_email = currentEmail;
 
@@ -594,6 +613,7 @@ export default function HomePage() {
         modelo: data.modelo as string,
         foto: data.foto,
         tem_academia: data.tem_academia ?? false,
+        tem_carregamento: data.tem_carregamento ?? true,
         user_email: currentEmail,
         user_id: currentUserId,
       };
@@ -722,7 +742,7 @@ export default function HomePage() {
     const list: Array<{ id: IazTab; label: string; icon: any }> = [
       { id: 'resumo', label: 'Resumo', icon: Layers },
       { id: 'gasolina', label: 'Gasolina', icon: Fuel },
-      { id: 'energia', label: 'Energia', icon: Zap },
+      ...(hasEletrico ? [{ id: 'energia' as IazTab, label: 'Energia', icon: Zap }] : []),
       { id: 'graficos', label: 'Gráficos', icon: BarChart3 },
     ];
 
@@ -732,7 +752,7 @@ export default function HomePage() {
 
     list.push({ id: 'veiculos', label: 'Veículos', icon: Car });
     return list;
-  }, [hasAcademiaEnabled]);
+  }, [hasAcademiaEnabled, hasEletrico]);
 
   // Título da Tela Ativa
   const activeScreenTitle = useMemo(() => {
@@ -1219,7 +1239,7 @@ export default function HomePage() {
                     </div>
 
                     {/* Sub-cards: Combustível, Energia, Academia */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                    <div className={`grid grid-cols-1 gap-3 pt-1 ${hasEletrico ? (hasAcademiaEnabled ? "sm:grid-cols-3" : "sm:grid-cols-2") : "sm:grid-cols-1"}`}>
                       <div
                         onClick={() => setActiveTab('gasolina')}
                         className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 cursor-pointer hover:border-amber-500/50 transition-all space-y-1"
@@ -1240,6 +1260,7 @@ export default function HomePage() {
                         </p>
                       </div>
 
+                      {hasEletrico && (
                       <div
                         onClick={() => setActiveTab('energia')}
                         className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 cursor-pointer hover:border-blue-500/50 transition-all space-y-1"
@@ -1259,6 +1280,7 @@ export default function HomePage() {
                           {formatNumber(totalKwaEnergia, 1)} kWh recarregados
                         </p>
                       </div>
+                      )}
 
                       {hasAcademiaEnabled && (
                         <div
@@ -1533,8 +1555,9 @@ export default function HomePage() {
                 <div className="space-y-4">
                   <GraficosScreen
                     abastecimentos={baseFilteredAbastecimentos}
-                    recargas={baseFilteredRecargas}
+                    recargas={hasEletrico ? baseFilteredRecargas : []}
                     veiculos={veiculos}
+                    mostrarEnergia={hasEletrico}
                     selectedPlaca={selectedPlaca}
                     hideValues={hideValues}
                   />

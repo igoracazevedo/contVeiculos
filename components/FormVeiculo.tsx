@@ -17,6 +17,7 @@ import {
   AlertCircle,
   Image as ImageIcon,
   Dumbbell,
+  Zap,
   Search,
   Check,
   Sparkles,
@@ -43,6 +44,7 @@ export function FormVeiculo({
   const [modelo, setModelo] = useState('');
   const [foto, setFoto] = useState('');
   const [temAcademia, setTemAcademia] = useState(false);
+  const [temCarregamento, setTemCarregamento] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
@@ -71,12 +73,14 @@ export function FormVeiculo({
         setModelo(veiculoToEdit.modelo);
         setFoto(veiculoToEdit.foto || '');
         setTemAcademia(Boolean(veiculoToEdit.tem_academia));
+        setTemCarregamento(veiculoToEdit.tem_carregamento !== false);
       } else {
         setPlaca('');
         setMarca('');
         setModelo('');
         setFoto('');
         setTemAcademia(false);
+        setTemCarregamento(true);
       }
       setError(null);
       setShowConfirmDelete(false);
@@ -147,7 +151,8 @@ export function FormVeiculo({
           marca: marca.trim(),
           modelo: modelo.trim(),
           foto: finalFoto || null,
-          tem_academia: temAcademia,
+          tem_academia: temCarregamento && temAcademia,
+          tem_carregamento: temCarregamento,
         },
         isEdit
       );
@@ -369,7 +374,33 @@ export function FormVeiculo({
             </p>
           </div>
 
+          {/* TEM CARREGAMENTO (parte elétrica) */}
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1e293b] border border-slate-200 dark:border-[#293548] space-y-2">
+            <label className="flex items-center justify-between cursor-pointer">
+              <div className="flex items-center gap-2.5">
+                <div className={`p-2 rounded-xl ${temCarregamento ? 'bg-blue-500/10 text-blue-600' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
+                  <Zap className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-slate-900 dark:text-slate-100 block">
+                    Tem carregamento (elétrico/híbrido)
+                  </span>
+                  <span className="text-[10px] text-slate-500 block">
+                    Desmarque para carros só a combustão: esconde energia, recargas e academia
+                  </span>
+                </div>
+              </div>
+              <input
+                type="checkbox"
+                checked={temCarregamento}
+                onChange={(e) => setTemCarregamento(e.target.checked)}
+                className="w-5 h-5 rounded-lg text-[#ff6200] focus:ring-[#ff6200] border-slate-300 dark:border-slate-600 cursor-pointer"
+              />
+            </label>
+          </div>
+
           {/* CONFIGURAÇÃO DO ITEM ACADEMIA (NOVO REQUISITO) */}
+          {temCarregamento && (
           <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1e293b] border border-slate-200 dark:border-[#293548] space-y-2">
             <label className="flex items-center justify-between cursor-pointer">
               <div className="flex items-center gap-2.5">
@@ -393,6 +424,7 @@ export function FormVeiculo({
               />
             </label>
           </div>
+          )}
 
           {/* Botões de Ação */}
           <div className="pt-2 flex items-center justify-between gap-3">

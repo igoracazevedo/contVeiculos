@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 
 interface GraficosScreenProps {
+  mostrarEnergia?: boolean;
   abastecimentos: Abastecimento[];
   recargas: Recarga[];
   veiculos: Veiculo[];
@@ -41,6 +42,7 @@ export function GraficosScreen({
   recargas,
   selectedPlaca,
   hideValues,
+  mostrarEnergia = true,
 }: GraficosScreenProps) {
   const [selectedMetric, setSelectedMetric] = useState<'valor' | 'volume'>('valor');
   const [selectedYear, setSelectedYear] = useState<number | 'todos'>('todos');
@@ -275,7 +277,7 @@ export function GraficosScreen({
       </div>
 
       {/* Cards de Resumo Agregado */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className={`grid grid-cols-1 ${mostrarEnergia ? "sm:grid-cols-3" : "sm:grid-cols-2"} gap-3`}>
         {/* Total Geral */}
         <div className="iaz-card p-4 space-y-1">
           <div className="flex items-center justify-between">
@@ -315,7 +317,7 @@ export function GraficosScreen({
           </div>
         </div>
 
-        {/* Energia */}
+        {mostrarEnergia && (
         <div className="iaz-card p-4 space-y-1">
           <div className="flex items-center justify-between">
             <span className="text-[11px] uppercase tracking-wide text-slate-500 font-bold">
@@ -335,6 +337,7 @@ export function GraficosScreen({
             </span>
           </div>
         </div>
+        )}
       </div>
 
       {/* Gráfico Comparativo Mês a Mês */}
@@ -348,10 +351,10 @@ export function GraficosScreen({
               <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 {selectedMetric === 'valor'
                   ? 'Evolução Mensal de Gastos (R$)'
-                  : 'Consumo Mensal (Litros vs kWh)'}
+                  : (mostrarEnergia ? 'Consumo Mensal (Litros vs kWh)' : 'Consumo Mensal (Litros)')}
               </h3>
               <p className="text-[11px] text-slate-500">
-                Comparativo visual direto de combustível e energia
+                {mostrarEnergia ? 'Comparativo visual direto de combustível e energia' : 'Evolução mensal do combustível'}
               </p>
             </div>
           </div>
@@ -362,10 +365,12 @@ export function GraficosScreen({
               <span className="w-3 h-3 rounded-md bg-amber-500" />
               <span className="text-slate-600 dark:text-slate-400 font-medium">Combustível</span>
             </div>
+            {mostrarEnergia && (
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-md bg-blue-600" />
               <span className="text-slate-600 dark:text-slate-400 font-medium">Energia</span>
             </div>
+            )}
           </div>
         </div>
 
@@ -419,7 +424,7 @@ export function GraficosScreen({
                     </div>
                   </div>
 
-                  {/* Barra Energia */}
+                  {mostrarEnergia && (
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-[10px]">
                       <span className="text-slate-500 flex items-center gap-1">
@@ -440,6 +445,7 @@ export function GraficosScreen({
                       />
                     </div>
                   </div>
+                  )}
                 </div>
               );
             })}
@@ -476,8 +482,8 @@ export function GraficosScreen({
                   </th>
                   <th className="pb-2 font-bold text-right">Gasolina (R$)</th>
                   <th className="pb-2 font-bold text-right">Litros</th>
-                  <th className="pb-2 font-bold text-right">Energia (R$)</th>
-                  <th className="pb-2 font-bold text-right">kWh</th>
+                  {mostrarEnergia && <th className="pb-2 font-bold text-right">Energia (R$)</th>}
+                  {mostrarEnergia && <th className="pb-2 font-bold text-right">kWh</th>}
                   <th className="pb-2 font-bold text-right">Total (R$)</th>
                 </tr>
               </thead>
@@ -491,12 +497,16 @@ export function GraficosScreen({
                     <td className="py-2.5 text-right text-slate-600 dark:text-slate-400">
                       {formatNumber(m.litrosGasolina, 1)} L
                     </td>
-                    <td className="py-2.5 text-right font-medium text-blue-600 dark:text-blue-400">
-                      {hideValues ? '••••' : formatCurrency(m.gastoEnergia)}
-                    </td>
-                    <td className="py-2.5 text-right text-slate-600 dark:text-slate-400">
-                      {formatNumber(m.kwaEnergia, 1)} kWh
-                    </td>
+                    {mostrarEnergia && (
+                      <td className="py-2.5 text-right font-medium text-blue-600 dark:text-blue-400">
+                        {hideValues ? '••••' : formatCurrency(m.gastoEnergia)}
+                      </td>
+                    )}
+                    {mostrarEnergia && (
+                      <td className="py-2.5 text-right text-slate-600 dark:text-slate-400">
+                        {formatNumber(m.kwaEnergia, 1)} kWh
+                      </td>
+                    )}
                     <td className="py-2.5 text-right font-extrabold text-slate-900 dark:text-slate-100">
                       {hideValues ? '••••' : formatCurrency(m.totalGasto)}
                     </td>

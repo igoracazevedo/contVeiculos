@@ -18,6 +18,7 @@ export interface Veiculo {
   modelo: string;
   foto?: string | null;
   tem_academia?: boolean | null;
+  tem_carregamento?: boolean | null; // false = só combustível (esconde a parte elétrica)
   user_id?: string | null;
   user_email?: string | null;
   created_at?: string;
