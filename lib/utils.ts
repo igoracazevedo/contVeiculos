@@ -213,33 +213,45 @@ export function parseCoordinates(local?: string | null): { lat: number; lng: num
   return null;
 }
 
+/** O veículo tem parte elétrica? (sem informação = sim, como era antes da opção existir) */
+export function temCarregamento(v?: { tem_carregamento?: boolean | null } | null): boolean {
+  return v?.tem_carregamento !== false;
+}
+
 /**
- * Calcula a média geral em km/l por veículo:
- * (max(km) - min(km)) / total(litros)
+ * Média em km/l pelo método do tanque cheio, por veículo:
+ * (maior km - menor km) / litros abastecidos DEPOIS do primeiro registro.
+ * O primeiro abastecimento só enche o tanque no km inicial: seus litros foram
+ * gastos antes dele e não entram na conta. Com vários veículos, soma as
+ * distâncias e os litros de cada um (nunca mistura o km de carros diferentes).
  */
 export function calcularMediaKmL(
-  abastecimentos: { km: number; litros: number }[]
+  abastecimentos: { km: number; litros: number; placa?: string }[]
 ): number | null {
   if (!abastecimentos || abastecimentos.length < 2) return null;
 
-  let minKm = Infinity;
-  let maxKm = -Infinity;
-  let totalLitros = 0;
-
+  const porPlaca = new Map<string, { km: number; litros: number }[]>();
   for (const ab of abastecimentos) {
     const km = Number(ab.km);
     const litros = Number(ab.litros);
-    if (!isNaN(km)) {
-      if (km < minKm) minKm = km;
-      if (km > maxKm) maxKm = km;
-    }
-    if (!isNaN(litros)) {
+    if (isNaN(km) || isNaN(litros)) continue;
+    const k = ab.placa ?? '';
+    if (!porPlaca.has(k)) porPlaca.set(k, []);
+    porPlaca.get(k)!.push({ km, litros });
+  }
+
+  let totalKm = 0;
+  let totalLitros = 0;
+  for (const lista of porPlaca.values()) {
+    if (lista.length < 2) continue;
+    lista.sort((a, b) => a.km - b.km);
+    const deltaKm = lista[lista.length - 1].km - lista[0].km;
+    const litros = lista.slice(1).reduce((acc, x) => acc + x.litros, 0);
+    if (deltaKm > 0 && litros > 0) {
+      totalKm += deltaKm;
       totalLitros += litros;
     }
   }
 
-  const deltaKm = maxKm - minKm;
-  if (deltaKm <= 0 || totalLitros <= 0) return null;
-
-  return deltaKm / totalLitros;
+  return totalKm > 0 && totalLitros > 0 ? totalKm / totalLitros : null;
 }
