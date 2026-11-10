@@ -186,9 +186,9 @@ export function FormAbastecimento({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-[#151f32] border border-slate-200/80 dark:border-[#293548] w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="bg-white dark:bg-[#161616] border border-slate-200/80 dark:border-[#2a2a2a] w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Topo Azul-Marinho IAZ */}
-        <div className="bg-[#000d3c] text-white px-5 py-4 flex items-center justify-between">
+        <div className="bg-[#0a0a0a] text-white px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-white/10 text-amber-500">
               <Fuel className="w-5 h-5" />
@@ -228,7 +228,7 @@ export function FormAbastecimento({
               <select
                 value={placa}
                 onChange={(e) => setPlaca(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-[#2a2a2a] bg-slate-50/50 dark:bg-[#1f1f1f] text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#bef264]"
               >
                 {veiculos.map((v) => (
                   <option key={v.placa} value={v.placa}>
@@ -246,7 +246,7 @@ export function FormAbastecimento({
                 type="datetime-local"
                 value={dataHora}
                 onChange={(e) => setDataHora(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-[#2a2a2a] bg-slate-50/50 dark:bg-[#1f1f1f] text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#bef264]"
               />
             </div>
           </div>
@@ -264,8 +264,8 @@ export function FormAbastecimento({
                   onClick={() => setTipoGasolina(tipo)}
                   className={`py-2 rounded-xl text-xs font-bold transition-all ${
                     tipoGasolina === tipo
-                      ? 'bg-[#ff6200] text-white shadow-sm'
-                      : 'bg-slate-50 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#293548] hover:border-[#ff6200]/40'
+                      ? 'bg-[#bef264] text-white shadow-sm'
+                      : 'bg-slate-50 dark:bg-[#1f1f1f] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#2a2a2a] hover:border-[#bef264]/40'
                   }`}
                 >
                   {tipo}
@@ -286,7 +286,7 @@ export function FormAbastecimento({
               placeholder="Ex: 45280"
               value={km}
               onChange={(e) => setKm(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2a2a2a] bg-slate-50/50 dark:bg-[#1f1f1f] text-slate-900 dark:text-slate-100 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#bef264]"
             />
           </div>
 
@@ -302,7 +302,7 @@ export function FormAbastecimento({
                 placeholder="Ex: 40,5"
                 value={litros}
                 onChange={(e) => setLitros(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2a2a2a] bg-slate-50/50 dark:bg-[#1f1f1f] text-slate-900 dark:text-slate-100 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#bef264]"
               />
             </div>
 
@@ -318,7 +318,7 @@ export function FormAbastecimento({
                   placeholder="0,00"
                   value={valorMasked}
                   onChange={handleValorChange}
-                  className="w-full px-3.5 py-2.5 pl-9 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+                  className="w-full px-3.5 py-2.5 pl-9 rounded-xl border border-slate-200 dark:border-[#2a2a2a] bg-slate-50/50 dark:bg-[#1f1f1f] text-slate-900 dark:text-slate-100 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#bef264]"
                 />
               </div>
             </div>
@@ -328,7 +328,7 @@ export function FormAbastecimento({
           {precoPorLitro > 0 && (
             <div className="p-2.5 rounded-xl bg-orange-50/50 dark:bg-slate-900 border border-orange-200/60 dark:border-slate-800 flex items-center justify-between text-xs">
               <span className="text-slate-500">Preço Calculado por Litro:</span>
-              <span className="font-extrabold text-[#ff6200]">
+              <span className="font-extrabold text-[#bef264]">
                 {formatCurrency(precoPorLitro)} / L
               </span>
             </div>
@@ -342,7 +342,7 @@ export function FormAbastecimento({
                 type="button"
                 onClick={handleGetLocation}
                 disabled={gettingLocation}
-                className="text-[11px] font-bold text-[#ff6200] hover:text-[#ec7000] flex items-center gap-1"
+                className="text-[11px] font-bold text-[#bef264] hover:text-[#d9f99d] flex items-center gap-1"
               >
                 {gettingLocation ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
@@ -357,7 +357,7 @@ export function FormAbastecimento({
               value={local}
               onChange={setLocal}
               options={['Posto Shell', 'Posto Ipiranga', 'Posto Petrobras / BR', 'Posto Ale', 'Auto Posto Rodovia']}
-              inputClassName="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+              inputClassName="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2a2a2a] bg-slate-50/50 dark:bg-[#1f1f1f] text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:ring-2 focus:ring-[#bef264]"
             />
           </div>
 
@@ -408,7 +408,7 @@ export function FormAbastecimento({
               <button
                 type="submit"
                 disabled={loading}
-                className="px-5 py-2.5 bg-[#ff6200] hover:bg-[#ec7000] text-white font-bold text-xs rounded-xl shadow-md shadow-orange-500/20 flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
+                className="px-5 py-2.5 bg-[#bef264] hover:bg-[#d9f99d] text-white font-bold text-xs rounded-xl shadow-md shadow-lime-300/20 flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
                 <span>{loading ? 'Salvando...' : 'Salvar Abastecimento'}</span>

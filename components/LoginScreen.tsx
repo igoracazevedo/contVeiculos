@@ -44,7 +44,7 @@ export function LoginScreen({ errorMessage }: LoginScreenProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#000d3c] flex flex-col justify-center items-center px-4 py-8 select-none">
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col justify-center items-center px-4 py-8 select-none">
       <div className="w-full max-w-sm space-y-6 animate-in fade-in zoom-in-95 duration-200">
         {/* Logo / Header Visual */}
         <div className="text-center space-y-3 flex flex-col items-center">
@@ -52,13 +52,13 @@ export function LoginScreen({ errorMessage }: LoginScreenProps) {
 
           <div>
             <h1 className="text-2xl font-black text-white tracking-tight">
-              LitroWatt <span className="text-[#ff6200]">IAZ</span>
+              LitroWatt <span className="text-[#bef264]">IAZ</span>
             </h1>
           </div>
         </div>
 
         {/* Card de Login */}
-        <div className="bg-white dark:bg-[#151f32] border border-slate-200/80 dark:border-[#293548] rounded-3xl p-6 shadow-2xl space-y-5">
+        <div className="bg-white dark:bg-[#161616] border border-slate-200/80 dark:border-[#2a2a2a] rounded-3xl p-6 shadow-2xl space-y-5">
           <div className="text-center space-y-1">
             <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Acesse sua Conta</h2>
             <p className="text-xs text-slate-500">
@@ -106,7 +106,7 @@ export function LoginScreen({ errorMessage }: LoginScreenProps) {
 
           {/* Segurança / Informações */}
           <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-1.5 text-[11px] text-slate-500 font-medium">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#ff6200]" />
+            <ShieldCheck className="w-3.5 h-3.5 text-[#bef264]" />
             <span>Acesso individual protegido e isolado</span>
           </div>
         </div>

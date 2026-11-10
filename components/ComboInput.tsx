@@ -82,7 +82,7 @@ export default function ComboInput({
       {open && list.length > 0 && (
         <ul
           role="listbox"
-          className="absolute z-50 mt-1.5 max-h-60 w-full overflow-auto rounded-2xl border border-slate-200 bg-white p-1 shadow-xl dark:border-[#293548] dark:bg-[#151f32]"
+          className="absolute z-50 mt-1.5 max-h-60 w-full overflow-auto rounded-2xl border border-slate-200 bg-white p-1 shadow-xl dark:border-[#2a2a2a] dark:bg-[#161616]"
         >
           {list.map((o) => (
             <li key={o} role="option" aria-selected={o === value}>
@@ -93,8 +93,8 @@ export default function ComboInput({
                   onChange(o);
                   setOpen(false);
                 }}
-                className={`w-full rounded-xl px-3 py-2 text-left text-xs transition hover:bg-[#ff6200]/10 hover:text-[#ec7000] ${
-                  o === value ? 'bg-[#ff6200]/10 font-semibold text-[#ec7000]' : 'text-slate-700 dark:text-slate-200'
+                className={`w-full rounded-xl px-3 py-2 text-left text-xs transition hover:bg-[#bef264]/10 hover:text-[#d9f99d] ${
+                  o === value ? 'bg-[#bef264]/10 font-semibold text-[#d9f99d]' : 'text-slate-700 dark:text-slate-200'
                 }`}
               >
                 {o}

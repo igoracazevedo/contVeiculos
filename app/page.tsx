@@ -116,11 +116,9 @@ export default function HomePage() {
   // Inicialização de Tema e Preferências
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('iaz_theme');
-      if (savedTheme === 'dark') {
-        setIsDark(true);
-        document.documentElement.classList.add('dark', 'dark-theme');
-      }
+      // Tema único: escuro (visual do Pets Saúde)
+      setIsDark(true);
+      document.documentElement.classList.add('dark', 'dark-theme');
       const savedHide = localStorage.getItem('iaz_hide_values');
       if (savedHide === 'true') {
         setHideValues(true);
@@ -128,7 +126,7 @@ export default function HomePage() {
     }
   }, []);
 
-  const toggleTheme = () => {
+  const _toggleTheme = () => {
     const nextDark = !isDark;
     setIsDark(nextDark);
     if (nextDark) {
@@ -777,7 +775,7 @@ export default function HomePage() {
   // Condicionais de Carregamento e Bloqueio
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#000d3c] flex flex-col justify-center items-center px-4">
+      <div className="min-h-screen bg-[#0a0a0a] flex flex-col justify-center items-center px-4">
         <LogoBadge size="lg" className="animate-bounce mb-3" />
         <p className="text-xs text-slate-300 font-semibold tracking-wide">
           Carregando LitroWatt IAZ...
@@ -810,21 +808,22 @@ export default function HomePage() {
   const firstName = userName.split(' ')[0];
 
   return (
-    <div className="min-h-screen bg-[#ffe600] text-slate-800 dark:text-slate-200">
+    <div className="relative min-h-screen overflow-x-hidden bg-[#0a0a0a] text-white">
+      <div className="aurora" />
       {/* Toast Padrão IAZ: Canto Superior Direito, Azul-Marinho com borda Laranja */}
       {toastMessage && (
         <div className="fixed top-4 right-4 z-50 max-w-sm w-full animate-in slide-in-from-top-3 duration-200">
           <div
             className={`px-4 py-3 rounded-2xl shadow-2xl flex items-center justify-between border ${
               toastMessage.type === 'error'
-                ? 'bg-[#001652] text-white border-rose-600'
-                : 'bg-[#001652] text-white border-[#ff6200]'
+                ? 'bg-[#161616] text-white border-rose-600'
+                : 'bg-[#161616] text-white border-[#bef264]'
             }`}
           >
             <div className="flex items-center gap-2.5">
               <span
                 className={`w-2.5 h-2.5 rounded-full ${
-                  toastMessage.type === 'error' ? 'bg-rose-500' : 'bg-[#ff6200]'
+                  toastMessage.type === 'error' ? 'bg-rose-500' : 'bg-[#bef264]'
                 }`}
               />
               <span className="text-xs font-semibold">{toastMessage.text}</span>
@@ -840,15 +839,15 @@ export default function HomePage() {
       )}
 
       {/* =========================================================================
-          1. TOPO AZUL-MARINHO (#000d3c, pb-7)
+          1. TOPO AZUL-MARINHO (#0a0a0a, pb-7)
          ========================================================================= */}
-      <header className="bg-[#ffe600] text-slate-900 pt-4 pb-8 px-4 sm:px-6 relative z-30">
+      <header className="text-white pt-[max(env(safe-area-inset-top),16px)] pb-3 px-4 sm:px-6 relative z-30">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           {/* Esquerda: Avatar do usuário (+ pill com primeiro nome no >=sm) */}
           <div className="relative">
             <button
               onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="flex items-center gap-2.5 p-1 rounded-full hover:bg-black/10 transition-colors focus:outline-none"
+              className="flex items-center gap-2.5 p-1 rounded-full hover:bg-white/10 transition-colors focus:outline-none"
               title="Meu perfil"
             >
               {userAvatar ? (
@@ -856,19 +855,19 @@ export default function HomePage() {
                 <img
                   src={userAvatar}
                   alt={userName}
-                  className="w-9 h-9 rounded-full object-cover border-2 border-[#ff6200]"
+                  className="w-9 h-9 rounded-full object-cover border-2 border-[#bef264]"
                 />
               ) : (
-                <div className="w-9 h-9 rounded-full bg-[#001652] border-2 border-[#ff6200] flex items-center justify-center text-xs font-extrabold text-[#ffb800]">
+                <div className="w-9 h-9 rounded-full bg-[#161616] border-2 border-[#bef264] flex items-center justify-center text-xs font-extrabold text-[#bef264]">
                   {sessionUser.email?.slice(0, 2).toUpperCase()}
                 </div>
               )}
 
               {/* Pill com primeiro nome e identificador no >=sm */}
-              <div className="hidden sm:flex items-center gap-1.5 bg-black/10 px-2.5 py-1 rounded-full text-xs font-bold text-slate-900">
+              <div className="hidden sm:flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-full text-xs font-bold text-white">
                 <span>{firstName}</span>
                 {isAdmin && (
-                  <span className="bg-[#ff6200] text-white text-[9px] px-1.5 py-0.2 rounded font-extrabold uppercase">
+                  <span className="bg-[#bef264] text-white text-[9px] px-1.5 py-0.2 rounded font-extrabold uppercase">
                     Admin
                   </span>
                 )}
@@ -878,7 +877,7 @@ export default function HomePage() {
             {/* Dropdown do Perfil */}
             {isProfileOpen && (
               <div
-                className="absolute left-0 mt-2 w-72 bg-[#001652] text-white rounded-3xl p-4 shadow-2xl border border-white/15 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-3"
+                className="absolute left-0 mt-2 w-72 bg-[#161616] text-white rounded-3xl p-4 shadow-2xl border border-white/15 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-3"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center gap-3 pb-3 border-b border-white/10">
@@ -887,17 +886,17 @@ export default function HomePage() {
                     <img
                       src={userAvatar}
                       alt={userName}
-                      className="w-11 h-11 rounded-full object-cover border-2 border-[#ff6200]"
+                      className="w-11 h-11 rounded-full object-cover border-2 border-[#bef264]"
                     />
                   ) : (
-                    <div className="w-11 h-11 rounded-full bg-[#000d3c] border-2 border-[#ff6200] flex items-center justify-center text-sm font-black text-[#ffb800]">
+                    <div className="w-11 h-11 rounded-full bg-[#0a0a0a] border-2 border-[#bef264] flex items-center justify-center text-sm font-black text-[#bef264]">
                       {sessionUser.email?.slice(0, 2).toUpperCase()}
                     </div>
                   )}
                   <div className="truncate">
                     <h4 className="text-sm font-extrabold text-white truncate">{userName}</h4>
                     <p className="text-[11px] text-slate-300 truncate font-mono">{sessionUser.email}</p>
-                    <span className="inline-block mt-0.5 text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#ff6200]/20 text-[#ffb800] uppercase">
+                    <span className="inline-block mt-0.5 text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#bef264]/20 text-[#bef264] uppercase">
                       {isAdmin ? 'Administrador' : 'Usuário Padrão'}
                     </span>
                   </div>
@@ -918,7 +917,7 @@ export default function HomePage() {
                       className="w-full text-left py-2 px-3 rounded-xl hover:bg-white/10 text-white font-bold flex items-center justify-between transition-colors"
                     >
                       <span className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-[#ff6200]" />
+                        <Users className="w-4 h-4 text-[#bef264]" />
                         <span>Painel de Usuários</span>
                       </span>
                       <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded font-mono">
@@ -931,13 +930,13 @@ export default function HomePage() {
                   {isAdmin && (
                     <div className="pt-2 border-t border-white/10 space-y-1.5">
                       <span className="text-[10px] uppercase font-bold text-slate-300 flex items-center gap-1">
-                        <Filter className="w-3 h-3 text-[#ff6200]" /> Filtro de Registros:
+                        <Filter className="w-3 h-3 text-[#bef264]" /> Filtro de Registros:
                       </span>
-                      <div className="flex bg-[#000d3c] p-0.5 rounded-xl border border-white/10">
+                      <div className="flex bg-[#0a0a0a] p-0.5 rounded-xl border border-white/10">
                         <button
                           onClick={() => setViewAllRecords(false)}
                           className={`flex-1 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                            !viewAllRecords ? 'bg-[#ff6200] text-white' : 'text-slate-400'
+                            !viewAllRecords ? 'bg-[#bef264] text-white' : 'text-slate-400'
                           }`}
                         >
                           Meus
@@ -945,7 +944,7 @@ export default function HomePage() {
                         <button
                           onClick={() => setViewAllRecords(true)}
                           className={`flex-1 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                            viewAllRecords ? 'bg-[#ff6200] text-white' : 'text-slate-400'
+                            viewAllRecords ? 'bg-[#bef264] text-white' : 'text-slate-400'
                           }`}
                         >
                           Todos
@@ -970,8 +969,8 @@ export default function HomePage() {
           <div className="flex items-center gap-2">
             <div className="pilula flex items-center gap-2 rounded-2xl bg-white px-2.5 py-1.5 shadow-sm">
               <LogoBadge size="sm" />
-              <span className="pilula-texto text-base sm:text-lg font-black tracking-tight text-[#000d3c] leading-none">
-                LitroWatt <span className="text-[#ff6200]">IAZ</span>
+              <span className="pilula-texto text-base sm:text-lg font-black tracking-tight text-[#0a0a0a] leading-none">
+                LitroWatt <span className="text-[#bef264]">IAZ</span>
               </span>
             </div>
           </div>
@@ -982,17 +981,17 @@ export default function HomePage() {
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
               className={`p-2 rounded-full transition-colors ${
-                isSearchOpen ? 'bg-[#ff6200] text-white' : 'hover:bg-black/10 text-slate-900'
+                isSearchOpen ? 'bg-[#bef264] text-white' : 'hover:bg-white/10 text-white'
               }`}
               title="Buscar registros"
             >
               <Search className="w-4 h-4" />
             </button>
 
-            {/* 2. Ajuda (?) em dourado #ffb800 */}
+            {/* 2. Ajuda (?) em dourado #bef264 */}
             <button
               onClick={() => setIsHelpOpen(true)}
-              className="p-2 rounded-full hover:bg-black/10 text-slate-900 transition-colors"
+              className="p-2 rounded-full hover:bg-white/10 text-white transition-colors"
               title="Como usar esta tela"
             >
               <HelpCircle className="w-4 h-4" />
@@ -1001,30 +1000,21 @@ export default function HomePage() {
             {/* Ocultar / mostrar valores monetários */}
             <button
               onClick={toggleHideValues}
-              className="p-2 rounded-full hover:bg-black/10 text-slate-900 transition-colors"
+              className="p-2 rounded-full hover:bg-white/10 text-white transition-colors"
               title={hideValues ? 'Mostrar valores monetários' : 'Ocultar valores monetários'}
               aria-label="Ocultar ou mostrar valores"
             >
-              {hideValues ? <EyeOff className="w-4 h-4 text-[#ff6200]" /> : <Eye className="w-4 h-4" />}
-            </button>
-
-            {/* 3. Tema (lua/sol) */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full hover:bg-black/10 text-slate-900 transition-colors"
-              title={isDark ? 'Ativar tema claro' : 'Ativar tema escuro'}
-            >
-              {isDark ? <Sun className="w-4 h-4 text-slate-900" /> : <Moon className="w-4 h-4" />}
+              {hideValues ? <EyeOff className="w-4 h-4 text-[#bef264]" /> : <Eye className="w-4 h-4" />}
             </button>
 
             {/* 4. Sincronizar */}
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="p-2 rounded-full hover:bg-black/10 text-slate-900 transition-colors"
+              className="p-2 rounded-full hover:bg-white/10 text-white transition-colors"
               title="Sincronizar dados com o Supabase"
             >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-[#ff6200]' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-[#bef264]' : ''}`} />
             </button>
           </div>
         </div>
@@ -1033,7 +1023,7 @@ export default function HomePage() {
       {/* =========================================================================
           2. FOLHA CURVADA (-mt-4 rounded-t-[26px] bg-[#f4f5f7], max-w-5xl mx-auto)
          ========================================================================= */}
-      <main className="iaz-sheet -mt-4 bg-[#f4f5f7] min-h-[calc(100vh-60px)] px-4 sm:px-6 pt-5 pb-16 relative z-30">
+      <main className="relative z-30 px-4 sm:px-6 pt-2 pb-36">
         <div className="max-w-5xl mx-auto space-y-4">
           {/* Barra de Busca Rápida (Expansível ao clicar na lupa) */}
           {isSearchOpen && (
@@ -1054,46 +1044,6 @@ export default function HomePage() {
               )}
             </div>
           )}
-
-          {/* =========================================================================
-              4. MENU DE ATALHOS EM SQUIRCLES (NAVEGAÇÃO PRINCIPAL EM TODAS AS TELAS)
-             ========================================================================= */}
-          <div className="flex items-center justify-between sm:justify-center sm:gap-4 w-full py-2 px-0.5">
-            {navItems.map((item) => {
-              const isActive = activeTab === item.id;
-              const IconComponent = item.icon;
-
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className="flex-1 sm:flex-initial sm:w-[68px] flex flex-col items-center group transition-all"
-                >
-                  <div
-                    className={`w-11 h-11 sm:w-13 sm:h-13 squircle-btn flex items-center justify-center transition-all duration-200 border ${
-                      isActive
-                        ? 'bg-[#ff6200] text-white scale-105 shadow-md shadow-orange-500/25 ring-2 ring-[#ff6200]/25 ring-offset-2 ring-offset-[#f4f5f7] dark:ring-offset-[#0b1120] border-transparent'
-                        : 'bg-white dark:bg-[#151f32] text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-[#293548] group-hover:border-[#ff6200] group-hover:text-[#ff6200]'
-                    }`}
-                  >
-                    <IconComponent className="w-5 h-5 stroke-[1.9]" />
-                  </div>
-                  <span
-                    className={`mt-1.5 text-[10px] sm:text-[11px] leading-tight text-center transition-colors ${
-                      isActive
-                        ? 'font-bold text-[#ff6200]'
-                        : 'font-medium text-slate-600 dark:text-slate-400 group-hover:text-[#ff6200]'
-                    }`}
-                  >
-                    {item.label}
-                  </span>
-                  {isActive && (
-                    <div className="h-1 w-5 rounded-full bg-[#ff6200] mt-1 transition-all" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
 
           {/* =========================================================================
               5. SELETOR DE PERÍODO EM UMA ÚNICA LINHA
@@ -1124,8 +1074,8 @@ export default function HomePage() {
               onClick={handleResetCurrentMonth}
               className={`px-3 py-1 rounded-full text-[11px] font-bold transition-colors ${
                 !filterByPeriod
-                  ? 'bg-[#ff6200]/15 text-[#ec7000]'
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-[#ec7000]'
+                  ? 'bg-[#bef264]/15 text-[#d9f99d]'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-[#d9f99d]'
               }`}
             >
               Mês Atual
@@ -1138,7 +1088,7 @@ export default function HomePage() {
           {veiculos.length > 0 && (
             <div className="iaz-card p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-orange-500/10 text-[#ff6200] flex-shrink-0">
+                <div className="p-2 rounded-xl bg-lime-300/10 text-[#bef264] flex-shrink-0">
                   <Car className="w-4 h-4" />
                 </div>
                 <div>
@@ -1159,7 +1109,7 @@ export default function HomePage() {
                 <select
                   value={selectedPlaca || ''}
                   onChange={(e) => handleSelectPlaca(e.target.value ? e.target.value : null)}
-                  className="w-full sm:min-w-[240px] px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-white dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#ff6200] cursor-pointer shadow-2xs"
+                  className="w-full sm:min-w-[240px] px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2a2a2a] bg-white dark:bg-[#1f1f1f] text-slate-900 dark:text-slate-100 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#bef264] cursor-pointer shadow-2xs"
                 >
                   <option value="">🚗 Todos os Veículos ({veiculos.length})</option>
                   {veiculos.map((v) => (
@@ -1191,10 +1141,10 @@ export default function HomePage() {
           {/* Loading Skeleton */}
           {loading && (
             <div className="space-y-4 py-2 animate-pulse">
-              <div className="h-44 bg-slate-200 dark:bg-[#151f32] rounded-3xl" />
+              <div className="h-44 bg-slate-200 dark:bg-[#161616] rounded-3xl" />
               <div className="grid grid-cols-2 gap-3">
-                <div className="h-24 bg-slate-200 dark:bg-[#151f32] rounded-3xl" />
-                <div className="h-24 bg-slate-200 dark:bg-[#151f32] rounded-3xl" />
+                <div className="h-24 bg-slate-200 dark:bg-[#161616] rounded-3xl" />
+                <div className="h-24 bg-slate-200 dark:bg-[#161616] rounded-3xl" />
               </div>
             </div>
           )}
@@ -1213,7 +1163,7 @@ export default function HomePage() {
                   <div className="iaz-card p-5 space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-2xl bg-orange-500/10 text-[#ff6200]">
+                        <div className="p-2.5 rounded-2xl bg-lime-300/10 text-[#bef264]">
                           <TrendingUp className="w-5 h-5" />
                         </div>
                         <div>
@@ -1231,7 +1181,7 @@ export default function HomePage() {
                           <span className="text-[10px] text-slate-500 block font-bold uppercase">
                             Média Global
                           </span>
-                          <span className="text-xs font-black text-[#ff6200]">
+                          <span className="text-xs font-black text-[#bef264]">
                             {formatNumber(mediaGeralKmL, 2)} km/l
                           </span>
                         </div>
@@ -1285,9 +1235,9 @@ export default function HomePage() {
                       {hasAcademiaEnabled && (
                         <div
                           onClick={() => setActiveTab('academia')}
-                          className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 cursor-pointer hover:border-[#ff6200]/50 transition-all space-y-1"
+                          className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 cursor-pointer hover:border-[#bef264]/50 transition-all space-y-1"
                         >
-                          <div className="flex items-center justify-between text-[#ff6200] font-bold text-xs">
+                          <div className="flex items-center justify-between text-[#bef264] font-bold text-xs">
                             <span className="flex items-center gap-1.5">
                               <Dumbbell className="w-4 h-4" /> Academia
                             </span>
@@ -1314,7 +1264,7 @@ export default function HomePage() {
                       </span>
                       <button
                         onClick={() => setActiveTab('veiculos')}
-                        className="text-xs font-bold text-[#ff6200] hover:text-[#ec7000]"
+                        className="text-xs font-bold text-[#bef264] hover:text-[#d9f99d]"
                       >
                         Ver todos →
                       </button>
@@ -1334,7 +1284,7 @@ export default function HomePage() {
                             setVehicleToEdit(null);
                             setIsVehicleModalOpen(true);
                           }}
-                          className="px-4 py-2 bg-[#ff6200] hover:bg-[#ec7000] text-white text-xs font-bold rounded-xl shadow-md transition-all"
+                          className="px-4 py-2 bg-[#bef264] hover:bg-[#d9f99d] text-white text-xs font-bold rounded-xl shadow-md transition-all"
                         >
                           Cadastrar Veículo
                         </button>
@@ -1424,7 +1374,7 @@ export default function HomePage() {
                                     </span>
                                   </div>
                                 </div>
-                                <span className="font-extrabold text-[#ff6200]">
+                                <span className="font-extrabold text-[#bef264]">
                                   {hideValues ? '••••' : formatCurrency(a.valor)}
                                 </span>
                               </div>
@@ -1453,7 +1403,7 @@ export default function HomePage() {
                                         {r.placa}
                                       </span>
                                       {r.academia && (
-                                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#ff6200]/10 text-[#ff6200] font-bold">
+                                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#bef264]/10 text-[#bef264] font-bold">
                                           Academia
                                         </span>
                                       )}
@@ -1463,7 +1413,7 @@ export default function HomePage() {
                                     </span>
                                   </div>
                                 </div>
-                                <span className="font-extrabold text-[#ff6200]">
+                                <span className="font-extrabold text-[#bef264]">
                                   {hideValues ? '••••' : formatCurrency(r.valor)}
                                 </span>
                               </div>
@@ -1492,7 +1442,7 @@ export default function HomePage() {
                         setFuelToEdit(null);
                         setIsFuelModalOpen(true);
                       }}
-                      className="px-3.5 py-2 rounded-xl bg-[#ff6200] hover:bg-[#ec7000] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-orange-500/20 transition-all active:scale-95"
+                      className="px-3.5 py-2 rounded-xl bg-[#bef264] hover:bg-[#d9f99d] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-lime-300/20 transition-all active:scale-95"
                     >
                       <Plus className="w-4 h-4" />
                       <span>Novo Abastecimento</span>
@@ -1528,7 +1478,7 @@ export default function HomePage() {
                         setRechargeToEdit(null);
                         setIsRechargeModalOpen(true);
                       }}
-                      className="px-3.5 py-2 rounded-xl bg-[#ff6200] hover:bg-[#ec7000] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-orange-500/20 transition-all active:scale-95"
+                      className="px-3.5 py-2 rounded-xl bg-[#bef264] hover:bg-[#d9f99d] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-lime-300/20 transition-all active:scale-95"
                     >
                       <Plus className="w-4 h-4" />
                       <span>Nova Recarga</span>
@@ -1581,7 +1531,7 @@ export default function HomePage() {
                         Total de {totalIdasAcademia} idas calculadas a R$ 60,00 cada
                       </p>
                     </div>
-                    <div className="p-3 rounded-2xl bg-orange-500/10 text-[#ff6200]">
+                    <div className="p-3 rounded-2xl bg-lime-300/10 text-[#bef264]">
                       <Dumbbell className="w-6 h-6" />
                     </div>
                   </div>
@@ -1618,7 +1568,7 @@ export default function HomePage() {
                         setVehicleToEdit(null);
                         setIsVehicleModalOpen(true);
                       }}
-                      className="px-3.5 py-2 rounded-xl bg-[#ff6200] hover:bg-[#ec7000] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-orange-500/20 transition-all active:scale-95"
+                      className="px-3.5 py-2 rounded-xl bg-[#bef264] hover:bg-[#d9f99d] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-lime-300/20 transition-all active:scale-95"
                     >
                       <Plus className="w-4 h-4" />
                       <span>Novo Veículo</span>
@@ -1696,10 +1646,10 @@ export default function HomePage() {
          ========================================================================= */}
       {isHelpOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#151f32] border border-slate-200/80 dark:border-[#293548] w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
+          <div className="bg-white dark:bg-[#161616] border border-slate-200/80 dark:border-[#2a2a2a] w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2 text-[#ffb800]">
-                <HelpCircle className="w-5 h-5 text-[#ff6200]" />
+              <div className="flex items-center gap-2 text-[#bef264]">
+                <HelpCircle className="w-5 h-5 text-[#bef264]" />
                 <h3 className="font-extrabold text-base text-slate-900 dark:text-slate-100">
                   Como usar: {activeScreenTitle}
                 </h3>
@@ -1786,7 +1736,7 @@ export default function HomePage() {
             <div className="pt-2">
               <button
                 onClick={() => setIsHelpOpen(false)}
-                className="w-full py-2.5 rounded-xl bg-[#ff6200] hover:bg-[#ec7000] text-white font-bold text-xs transition-colors shadow-sm"
+                className="w-full py-2.5 rounded-xl bg-[#bef264] hover:bg-[#d9f99d] text-white font-bold text-xs transition-colors shadow-sm"
               >
                 Entendi
               </button>
@@ -1794,6 +1744,29 @@ export default function HomePage() {
           </div>
         </div>
       )}
+
+      {/* Barra inferior flutuante em pílula (visual do Pets Saúde) */}
+      <nav className="fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(env(safe-area-inset-bottom),14px)] pointer-events-none">
+        <div className="max-w-xl mx-auto pointer-events-auto flex items-center rounded-full bg-[#1c1c1c]/90 backdrop-blur-xl border border-white/10 p-1.5 shadow-2xl shadow-black/60">
+          {navItems.map((item) => {
+            const isActive = activeTab === item.id;
+            const IconComponent = item.icon;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                aria-label={item.label}
+                title={item.label}
+                className={`flex-1 h-12 rounded-full grid place-items-center transition-colors ${
+                  isActive ? 'bg-black text-lime-300' : 'text-white/70 hover:text-white'
+                }`}
+              >
+                <IconComponent className="w-[22px] h-[22px]" strokeWidth={1.8} />
+              </button>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 }

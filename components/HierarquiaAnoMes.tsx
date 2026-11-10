@@ -232,7 +232,7 @@ export function HierarquiaAnoMes({
         <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 mx-auto flex items-center justify-center text-slate-500 mb-3">
           {mode === 'gasolina' && <Fuel className="w-6 h-6 text-amber-500" />}
           {mode === 'energia' && <Zap className="w-6 h-6 text-blue-600" />}
-          {mode === 'academia' && <Dumbbell className="w-6 h-6 text-[#ff6200]" />}
+          {mode === 'academia' && <Dumbbell className="w-6 h-6 text-[#bef264]" />}
         </div>
         <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">Nenhum registro encontrado</h3>
         <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
@@ -257,10 +257,10 @@ export function HierarquiaAnoMes({
             {/* NÍVEL 1: ANO */}
             <button
               onClick={() => toggleYear(yearGroup.ano)}
-              className="w-full flex items-center justify-between p-4 bg-white dark:bg-[#151f32] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-left"
+              className="w-full flex items-center justify-between p-4 bg-white dark:bg-[#161616] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-left"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-orange-500/10 text-[#ff6200]">
+                <div className="p-2 rounded-xl bg-lime-300/10 text-[#bef264]">
                   <Calendar className="w-5 h-5" />
                 </div>
                 <div>
@@ -283,7 +283,7 @@ export function HierarquiaAnoMes({
 
               <div className="flex items-center gap-3">
                 <div className="text-right">
-                  <p className="text-sm font-extrabold text-[#ff6200]">
+                  <p className="text-sm font-extrabold text-[#bef264]">
                     {hideValues ? '••••' : formatCurrency(yearGroup.totalValor)}
                   </p>
                   <p className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Total Ano</p>
@@ -310,7 +310,7 @@ export function HierarquiaAnoMes({
                   return (
                     <div
                       key={monthKey}
-                      className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#151f32] overflow-hidden"
+                      className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#161616] overflow-hidden"
                     >
                       {/* HEADER DO MÊS */}
                       <button
@@ -324,7 +324,7 @@ export function HierarquiaAnoMes({
                                 ? 'bg-amber-500'
                                 : mode === 'energia'
                                 ? 'bg-blue-600'
-                                : 'bg-[#ff6200]'
+                                : 'bg-[#bef264]'
                             }`}
                           />
                           <div>
@@ -353,7 +353,7 @@ export function HierarquiaAnoMes({
                           <div className="text-right">
                             {mode === 'academia' ? (
                               <>
-                                <p className="text-xs font-bold text-[#ff6200]">
+                                <p className="text-xs font-bold text-[#bef264]">
                                   {hideValues ? '••••' : formatCurrency(valorAcademia)}
                                 </p>
                                 <p className="text-[10px] text-slate-500 font-medium">
@@ -382,8 +382,8 @@ export function HierarquiaAnoMes({
                         <div className="p-3 pt-0 space-y-2 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40">
                           {/* Banner de resumo de academia no mês */}
                           {mode === 'academia' && (
-                            <div className="mt-2.5 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-between text-xs">
-                              <div className="flex items-center gap-2 text-[#ff6200] font-bold">
+                            <div className="mt-2.5 p-3 rounded-xl bg-lime-300/10 border border-orange-500/20 flex items-center justify-between text-xs">
+                              <div className="flex items-center gap-2 text-[#bef264] font-bold">
                                 <Dumbbell className="w-4 h-4" />
                                 <span>Total Idas Academia:</span>
                               </div>
@@ -403,7 +403,7 @@ export function HierarquiaAnoMes({
                               return (
                                 <div
                                   key={item.id}
-                                  className="p-3 rounded-2xl bg-white dark:bg-[#151f32] border border-slate-200/70 dark:border-slate-800 hover:border-[#ff6200]/40 transition-all space-y-2.5"
+                                  className="p-3 rounded-2xl bg-white dark:bg-[#161616] border border-slate-200/70 dark:border-slate-800 hover:border-[#bef264]/40 transition-all space-y-2.5"
                                 >
                                   {/* Cabeçalho do Card */}
                                   <div className="flex items-start justify-between gap-2">
@@ -429,7 +429,7 @@ export function HierarquiaAnoMes({
                                       {onEditAbastecimento && (
                                         <button
                                           onClick={() => onEditAbastecimento(item)}
-                                          className="p-1.5 text-slate-400 hover:text-[#ff6200] rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                          className="p-1.5 text-slate-400 hover:text-[#bef264] rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                           title="Editar"
                                         >
                                           <Edit2 className="w-3.5 h-3.5" />
@@ -465,7 +465,7 @@ export function HierarquiaAnoMes({
                                     </div>
                                     <div>
                                       <span className="text-[10px] text-slate-400 block font-bold uppercase">Total</span>
-                                      <span className="text-xs font-extrabold text-[#ff6200]">
+                                      <span className="text-xs font-extrabold text-[#bef264]">
                                         {hideValues ? '••••' : formatCurrency(item.valor)}
                                       </span>
                                     </div>
@@ -485,7 +485,7 @@ export function HierarquiaAnoMes({
                                     <div>
                                       {!coords && (
                                         <div className="flex items-center gap-1 text-[11px] text-slate-500 truncate">
-                                          <MapPin className="w-3 h-3 text-[#ff6200] flex-shrink-0" />
+                                          <MapPin className="w-3 h-3 text-[#bef264] flex-shrink-0" />
                                           <span className="truncate">{item.local}</span>
                                         </div>
                                       )}
@@ -508,7 +508,7 @@ export function HierarquiaAnoMes({
                               return (
                                 <div
                                   key={item.id}
-                                  className="p-3 rounded-2xl bg-white dark:bg-[#151f32] border border-slate-200/70 dark:border-slate-800 hover:border-[#ff6200]/40 transition-all space-y-2.5"
+                                  className="p-3 rounded-2xl bg-white dark:bg-[#161616] border border-slate-200/70 dark:border-slate-800 hover:border-[#bef264]/40 transition-all space-y-2.5"
                                 >
                                   {/* Cabeçalho do Card */}
                                   <div className="flex items-start justify-between gap-2">
@@ -517,7 +517,7 @@ export function HierarquiaAnoMes({
                                         {item.placa}
                                       </span>
                                       {item.academia && (
-                                        <span className="bg-[#ff6200]/10 text-[#ff6200] border border-[#ff6200]/30 px-2 py-0.5 rounded-lg text-[10px] font-bold flex items-center gap-1">
+                                        <span className="bg-[#bef264]/10 text-[#bef264] border border-[#bef264]/30 px-2 py-0.5 rounded-lg text-[10px] font-bold flex items-center gap-1">
                                           <Dumbbell className="w-2.5 h-2.5" />
                                           Academia
                                         </span>
@@ -529,7 +529,7 @@ export function HierarquiaAnoMes({
                                       {onEditRecarga && (
                                         <button
                                           onClick={() => onEditRecarga(item)}
-                                          className="p-1.5 text-slate-400 hover:text-[#ff6200] rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                          className="p-1.5 text-slate-400 hover:text-[#bef264] rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                           title="Editar"
                                         >
                                           <Edit2 className="w-3.5 h-3.5" />
@@ -565,7 +565,7 @@ export function HierarquiaAnoMes({
                                     </div>
                                     <div>
                                       <span className="text-[10px] text-slate-400 block font-bold uppercase">Valor</span>
-                                      <span className="text-xs font-extrabold text-[#ff6200]">
+                                      <span className="text-xs font-extrabold text-[#bef264]">
                                         {hideValues ? '••••' : formatCurrency(item.valor)}
                                       </span>
                                     </div>
@@ -585,7 +585,7 @@ export function HierarquiaAnoMes({
                                     <div>
                                       {!coords && (
                                         <div className="flex items-center gap-1 text-[11px] text-slate-500 truncate">
-                                          <MapPin className="w-3 h-3 text-[#ff6200] flex-shrink-0" />
+                                          <MapPin className="w-3 h-3 text-[#bef264] flex-shrink-0" />
                                           <span className="truncate">{item.local}</span>
                                         </div>
                                       )}
@@ -616,7 +616,7 @@ export function HierarquiaAnoMes({
       {/* Modal de confirmação de exclusão */}
       {itemToDelete && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm p-4 flex items-center justify-center animate-in fade-in">
-          <div className="bg-white dark:bg-[#151f32] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 max-w-sm w-full text-center shadow-2xl space-y-4">
+          <div className="bg-white dark:bg-[#161616] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 max-w-sm w-full text-center shadow-2xl space-y-4">
             <AlertCircle className="w-12 h-12 text-rose-500 mx-auto" />
             <div>
               <h4 className="text-base font-extrabold text-slate-900 dark:text-slate-100">Confirmar exclusão</h4>

@@ -205,7 +205,7 @@ export function GraficosScreen({
             onClick={() => setSelectedMetric('valor')}
             className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
               selectedMetric === 'valor'
-                ? 'bg-[#ff6200] text-white shadow-sm'
+                ? 'bg-[#bef264] text-white shadow-sm'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
             }`}
           >
@@ -215,7 +215,7 @@ export function GraficosScreen({
             onClick={() => setSelectedMetric('volume')}
             className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
               selectedMetric === 'volume'
-                ? 'bg-[#ff6200] text-white shadow-sm'
+                ? 'bg-[#bef264] text-white shadow-sm'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
             }`}
           >
@@ -231,7 +231,7 @@ export function GraficosScreen({
               onClick={() => setSortOrder('desc')}
               className={`px-2.5 py-1.5 rounded-lg font-bold flex items-center gap-1 transition-all ${
                 sortOrder === 'desc'
-                  ? 'bg-[#ff6200] text-white shadow-sm'
+                  ? 'bg-[#bef264] text-white shadow-sm'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
               }`}
               title="Mais recentes primeiro (padrão)"
@@ -243,7 +243,7 @@ export function GraficosScreen({
               onClick={() => setSortOrder('asc')}
               className={`px-2.5 py-1.5 rounded-lg font-bold flex items-center gap-1 transition-all ${
                 sortOrder === 'asc'
-                  ? 'bg-[#ff6200] text-white shadow-sm'
+                  ? 'bg-[#bef264] text-white shadow-sm'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
               }`}
               title="Mais antigos primeiro"
@@ -262,7 +262,7 @@ export function GraficosScreen({
                 onChange={(e) =>
                   setSelectedYear(e.target.value === 'todos' ? 'todos' : Number(e.target.value))
                 }
-                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1 text-slate-800 dark:text-slate-200 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#ff6200]"
+                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1 text-slate-800 dark:text-slate-200 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#bef264]"
               >
                 <option value="todos">Todos os Anos</option>
                 {availableYears.map((yr) => (
@@ -284,7 +284,7 @@ export function GraficosScreen({
             <span className="text-[11px] uppercase tracking-wide text-slate-500 font-bold">
               Gasto Total
             </span>
-            <div className="p-1.5 rounded-lg bg-orange-500/10 text-[#ff6200]">
+            <div className="p-1.5 rounded-lg bg-lime-300/10 text-[#bef264]">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
@@ -344,7 +344,7 @@ export function GraficosScreen({
       <div className="iaz-card p-4 sm:p-5 space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-orange-500/10 text-[#ff6200]">
+            <div className="p-2 rounded-xl bg-lime-300/10 text-[#bef264]">
               <BarChart3 className="w-4 h-4" />
             </div>
             <div>
@@ -393,7 +393,7 @@ export function GraficosScreen({
               return (
                 <div
                   key={m.key}
-                  className="p-3 rounded-2xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 space-y-2 hover:border-[#ff6200]/40 transition-colors"
+                  className="p-3 rounded-2xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 space-y-2 hover:border-[#bef264]/40 transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-extrabold text-slate-900 dark:text-slate-100">{m.label}</span>
@@ -467,16 +467,16 @@ export function GraficosScreen({
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-800 text-[10px] text-slate-500 uppercase tracking-wider">
                   <th
-                    className="pb-2 font-bold cursor-pointer hover:text-[#ff6200] transition-colors"
+                    className="pb-2 font-bold cursor-pointer hover:text-[#bef264] transition-colors"
                     onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
                     title="Alternar ordenação"
                   >
                     <span className="flex items-center gap-1">
                       Mês/Ano
                       {sortOrder === 'desc' ? (
-                        <ArrowDownWideNarrow className="w-3 h-3 text-[#ff6200]" />
+                        <ArrowDownWideNarrow className="w-3 h-3 text-[#bef264]" />
                       ) : (
-                        <ArrowUpNarrowWide className="w-3 h-3 text-[#ff6200]" />
+                        <ArrowUpNarrowWide className="w-3 h-3 text-[#bef264]" />
                       )}
                     </span>
                   </th>

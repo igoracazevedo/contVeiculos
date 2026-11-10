@@ -61,7 +61,7 @@ export function CarCard({
       onClick={onSelect}
       className={`iaz-card transition-all duration-200 overflow-hidden cursor-pointer ${
         isSelected
-          ? 'border-[#ff6200] ring-2 ring-[#ff6200]/25 shadow-md'
+          ? 'border-[#bef264] ring-2 ring-[#bef264]/25 shadow-md'
           : 'hover:border-slate-300 dark:hover:border-slate-700'
       }`}
     >
@@ -100,7 +100,7 @@ export function CarCard({
         >
           <button
             onClick={() => onEdit(veiculo)}
-            className="p-2 rounded-xl bg-black/50 text-white hover:text-[#ff6200] hover:bg-black/70 backdrop-blur-md transition-all border border-white/20"
+            className="p-2 rounded-xl bg-black/50 text-white hover:text-[#bef264] hover:bg-black/70 backdrop-blur-md transition-all border border-white/20"
             title="Editar veículo"
           >
             <Edit2 className="w-3.5 h-3.5" />
@@ -117,7 +117,7 @@ export function CarCard({
         {/* Informações sobrepostas na base da imagem */}
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between text-white">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#ffb800]">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#bef264]">
               {veiculo.marca}
             </span>
             <h3 className="text-base font-extrabold tracking-tight drop-shadow-md">
@@ -127,8 +127,8 @@ export function CarCard({
 
           {/* Badge de Academia se habilitado no veículo */}
           {eletrico && veiculo.tem_academia && (
-            <div className="flex items-center gap-1 bg-[#000d3c]/85 border border-[#ff6200]/40 px-2 py-0.5 rounded-lg text-[10px] font-bold text-[#ffb800] backdrop-blur-sm">
-              <Dumbbell className="w-3 h-3 text-[#ff6200]" />
+            <div className="flex items-center gap-1 bg-[#0a0a0a]/85 border border-[#bef264]/40 px-2 py-0.5 rounded-lg text-[10px] font-bold text-[#bef264] backdrop-blur-sm">
+              <Dumbbell className="w-3 h-3 text-[#bef264]" />
               <span>Academia</span>
             </div>
           )}
@@ -177,9 +177,9 @@ export function CarCard({
           {mediaKmL !== null ? (
             <div className="text-right">
               <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider flex items-center gap-1 justify-end">
-                <Gauge className="w-3 h-3 text-[#ff6200]" /> Consumo
+                <Gauge className="w-3 h-3 text-[#bef264]" /> Consumo
               </span>
-              <span className="text-xs font-extrabold text-[#ff6200]">
+              <span className="text-xs font-extrabold text-[#bef264]">
                 {formatNumber(mediaKmL, 2)} km/l
               </span>
             </div>

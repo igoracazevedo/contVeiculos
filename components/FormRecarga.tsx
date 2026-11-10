@@ -208,9 +208,9 @@ export function FormRecarga({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-[#151f32] border border-slate-200/80 dark:border-[#293548] w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="bg-white dark:bg-[#161616] border border-slate-200/80 dark:border-[#2a2a2a] w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Cabeçalho Topo Azul-Marinho IAZ */}
-        <div className="bg-[#000d3c] text-white px-5 py-4 flex items-center justify-between">
+        <div className="bg-[#0a0a0a] text-white px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-white/10 text-blue-400">
               <Zap className="w-5 h-5" />
@@ -250,7 +250,7 @@ export function FormRecarga({
               <select
                 value={placa}
                 onChange={(e) => setPlaca(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-[#2a2a2a] bg-slate-50/50 dark:bg-[#1f1f1f] text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#bef264]"
               >
                 {veiculos.filter((v) => v.tem_carregamento !== false || v.placa === placa).map((v) => (
                   <option key={v.placa} value={v.placa}>
@@ -268,13 +268,13 @@ export function FormRecarga({
                 type="datetime-local"
                 value={dataHora}
                 onChange={(e) => setDataHora(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-[#2a2a2a] bg-slate-50/50 dark:bg-[#1f1f1f] text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#bef264]"
               />
             </div>
           </div>
 
           {/* Bateria: % Inicial e % Final */}
-          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1e293b] border border-slate-200 dark:border-[#293548] space-y-2.5">
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#2a2a2a] space-y-2.5">
             <span className="text-[11px] font-bold uppercase tracking-wide text-slate-500 flex items-center gap-1.5">
               <BatteryCharging className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
               Nível da Bateria
@@ -289,7 +289,7 @@ export function FormRecarga({
                   placeholder="20"
                   value={percInicial}
                   onChange={(e) => setPercInicial(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#bef264]"
                 />
               </div>
 
@@ -302,7 +302,7 @@ export function FormRecarga({
                   placeholder="100"
                   value={percFinal}
                   onChange={(e) => setPercFinal(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#bef264]"
                 />
               </div>
             </div>
@@ -320,7 +320,7 @@ export function FormRecarga({
                 placeholder="Ex: 15,5"
                 value={kwa}
                 onChange={(e) => setKwa(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2a2a2a] bg-slate-50/50 dark:bg-[#1f1f1f] text-slate-900 dark:text-slate-100 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#bef264]"
               />
             </div>
 
@@ -336,7 +336,7 @@ export function FormRecarga({
                   placeholder="0,00"
                   value={valorMasked}
                   onChange={handleValorChange}
-                  className="w-full px-3.5 py-2.5 pl-9 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+                  className="w-full px-3.5 py-2.5 pl-9 rounded-xl border border-slate-200 dark:border-[#2a2a2a] bg-slate-50/50 dark:bg-[#1f1f1f] text-slate-900 dark:text-slate-100 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#bef264]"
                 />
               </div>
             </div>
@@ -350,7 +350,7 @@ export function FormRecarga({
                 type="button"
                 onClick={handleGetLocation}
                 disabled={gettingLocation}
-                className="text-[11px] font-bold text-[#ff6200] hover:text-[#ec7000] flex items-center gap-1"
+                className="text-[11px] font-bold text-[#bef264] hover:text-[#d9f99d] flex items-center gap-1"
               >
                 {gettingLocation ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
@@ -366,7 +366,7 @@ export function FormRecarga({
               placeholder="Ex: Garagem Residencial, Estação de Recarga..."
               value={local}
               onChange={(e) => setLocal(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2a2a2a] bg-slate-50/50 dark:bg-[#1f1f1f] text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:ring-2 focus:ring-[#bef264]"
             />
             <datalist id="locais-recarga">
               <option value="Garagem Residencial" />
@@ -379,13 +379,13 @@ export function FormRecarga({
 
           {/* CHECKBOX ACADEMIA: CONDICIONADO AO VEÍCULO SELECIONADO TER ACADEMIA HABILITADA */}
           {vehicleHasAcademia && (
-            <div className="p-3.5 rounded-2xl bg-orange-50/60 dark:bg-[#1e293b] border border-orange-200/80 dark:border-[#293548] space-y-2 animate-in fade-in">
+            <div className="p-3.5 rounded-2xl bg-orange-50/60 dark:bg-[#1f1f1f] border border-orange-200/80 dark:border-[#2a2a2a] space-y-2 animate-in fade-in">
               <label className="flex items-center justify-between cursor-pointer">
                 <div className="flex items-center gap-2.5">
                   <div
                     className={`p-2 rounded-xl ${
                       academia
-                        ? 'bg-[#ff6200] text-white shadow-sm'
+                        ? 'bg-[#bef264] text-white shadow-sm'
                         : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
                     }`}
                   >
@@ -404,7 +404,7 @@ export function FormRecarga({
                   type="checkbox"
                   checked={academia}
                   onChange={(e) => setAcademia(e.target.checked)}
-                  className="w-5 h-5 rounded-lg text-[#ff6200] focus:ring-[#ff6200] border-slate-300 dark:border-slate-600 cursor-pointer"
+                  className="w-5 h-5 rounded-lg text-[#bef264] focus:ring-[#bef264] border-slate-300 dark:border-slate-600 cursor-pointer"
                 />
               </label>
             </div>
@@ -457,7 +457,7 @@ export function FormRecarga({
               <button
                 type="submit"
                 disabled={loading}
-                className="px-5 py-2.5 bg-[#ff6200] hover:bg-[#ec7000] text-white font-bold text-xs rounded-xl shadow-md shadow-orange-500/20 flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
+                className="px-5 py-2.5 bg-[#bef264] hover:bg-[#d9f99d] text-white font-bold text-xs rounded-xl shadow-md shadow-lime-300/20 flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
                 <span>{loading ? 'Salvando...' : 'Salvar Recarga'}</span>

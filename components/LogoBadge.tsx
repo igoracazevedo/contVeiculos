@@ -18,7 +18,7 @@ export function LogoBadge({ size = 'md', className = '', showText = false }: Log
       {showText && (
         <div className="flex flex-col">
           <span className="text-base sm:text-lg font-extrabold tracking-tight text-white leading-none">
-            LitroWatt <span className="text-[#ff6200]">IAZ</span>
+            LitroWatt <span className="text-[#bef264]">IAZ</span>
           </span>
         </div>
       )}

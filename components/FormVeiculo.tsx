@@ -180,11 +180,11 @@ export function FormVeiculo({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-[#151f32] border border-slate-200/80 dark:border-[#293548] w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="bg-white dark:bg-[#161616] border border-slate-200/80 dark:border-[#2a2a2a] w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Cabeçalho Topo Azul-Marinho IAZ */}
-        <div className="bg-[#000d3c] text-white px-5 py-4 flex items-center justify-between">
+        <div className="bg-[#0a0a0a] text-white px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-white/10 text-[#ff6200]">
+            <div className="p-2 rounded-xl bg-white/10 text-[#bef264]">
               <Car className="w-5 h-5" />
             </div>
             <div>
@@ -214,7 +214,7 @@ export function FormVeiculo({
           )}
 
           {/* Pré-visualização da Foto Atual */}
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-[#1e293b] border border-slate-200 dark:border-[#293548]">
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#2a2a2a]">
             <div className="w-16 h-14 rounded-xl bg-slate-200 dark:bg-slate-800 overflow-hidden relative flex-shrink-0 border border-slate-300/60 dark:border-slate-700">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -238,7 +238,7 @@ export function FormVeiculo({
                 type="button"
                 onClick={handleSearchPhotos}
                 disabled={searchingPhotos}
-                className="mt-1 text-[11px] font-bold text-[#ff6200] hover:text-[#ec7000] flex items-center gap-1"
+                className="mt-1 text-[11px] font-bold text-[#bef264] hover:text-[#d9f99d] flex items-center gap-1"
               >
                 {searchingPhotos ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
@@ -255,7 +255,7 @@ export function FormVeiculo({
             <div className="p-3 rounded-2xl bg-orange-50/50 dark:bg-slate-900 border border-orange-200 dark:border-slate-700 space-y-2 animate-in fade-in">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5 text-[#ff6200]" />
+                  <Sparkles className="w-3.5 h-3.5 text-[#bef264]" />
                   Fotos públicas sugeridas (Wikimedia):
                 </span>
                 <button
@@ -278,7 +278,7 @@ export function FormVeiculo({
                       key={idx}
                       type="button"
                       onClick={() => handleSelectPublicPhoto(p.url)}
-                      className="group relative h-16 rounded-xl overflow-hidden border border-slate-300 dark:border-slate-700 hover:border-[#ff6200] focus:ring-2 focus:ring-[#ff6200] transition-all bg-slate-100 dark:bg-slate-800"
+                      className="group relative h-16 rounded-xl overflow-hidden border border-slate-300 dark:border-slate-700 hover:border-[#bef264] focus:ring-2 focus:ring-[#bef264] transition-all bg-slate-100 dark:bg-slate-800"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
@@ -312,7 +312,7 @@ export function FormVeiculo({
               onChange={(e) => setPlaca(e.target.value.toUpperCase())}
               disabled={isEdit}
               maxLength={8}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 font-mono text-sm uppercase tracking-wider font-bold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2a2a2a] bg-slate-50/50 dark:bg-[#1f1f1f] text-slate-900 dark:text-slate-100 font-mono text-sm uppercase tracking-wider font-bold focus:outline-none focus:ring-2 focus:ring-[#bef264]"
             />
           </div>
 
@@ -327,7 +327,7 @@ export function FormVeiculo({
                 value={marca}
                 onChange={setMarca}
                 options={['BYD', 'Caoa Chery', 'GWM', 'Toyota', 'Renault', 'Jeep', 'Volvo', 'Volkswagen', 'Chevrolet', 'Fiat']}
-                inputClassName="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+                inputClassName="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2a2a2a] bg-slate-50/50 dark:bg-[#1f1f1f] text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#bef264]"
               />
             </div>
 
@@ -340,7 +340,7 @@ export function FormVeiculo({
                 value={modelo}
                 onChange={setModelo}
                 options={['Song Pro GS', 'Song Plus DM-i', 'Tiggo 5x Sport', 'Tiggo 7 Pro', 'Tiggo 8 Pro PHEV', 'Haval H6 HEV/PHEV', 'Dolphin EV', 'Seal EV', 'Corolla Cross Hybrid']}
-                inputClassName="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+                inputClassName="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2a2a2a] bg-slate-50/50 dark:bg-[#1f1f1f] text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#bef264]"
               />
             </div>
           </div>
@@ -353,7 +353,7 @@ export function FormVeiculo({
                 <button
                   type="button"
                   onClick={() => setFoto('')}
-                  className="text-[10px] text-[#ff6200] hover:underline"
+                  className="text-[10px] text-[#bef264] hover:underline"
                 >
                   Usar pública padrão
                 </button>
@@ -365,7 +365,7 @@ export function FormVeiculo({
                 placeholder="Cole URL direta ou do Google Drive"
                 value={foto}
                 onChange={(e) => setFoto(e.target.value)}
-                className="w-full px-3.5 py-2.5 pl-9 rounded-xl border border-slate-200 dark:border-[#293548] bg-slate-50/50 dark:bg-[#1e293b] text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:ring-2 focus:ring-[#ff6200]"
+                className="w-full px-3.5 py-2.5 pl-9 rounded-xl border border-slate-200 dark:border-[#2a2a2a] bg-slate-50/50 dark:bg-[#1f1f1f] text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:ring-2 focus:ring-[#bef264]"
               />
               <ImageIcon className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
             </div>
@@ -375,7 +375,7 @@ export function FormVeiculo({
           </div>
 
           {/* TEM CARREGAMENTO (parte elétrica) */}
-          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1e293b] border border-slate-200 dark:border-[#293548] space-y-2">
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#2a2a2a] space-y-2">
             <label className="flex items-center justify-between cursor-pointer">
               <div className="flex items-center gap-2.5">
                 <div className={`p-2 rounded-xl ${temCarregamento ? 'bg-blue-500/10 text-blue-600' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
@@ -394,17 +394,17 @@ export function FormVeiculo({
                 type="checkbox"
                 checked={temCarregamento}
                 onChange={(e) => setTemCarregamento(e.target.checked)}
-                className="w-5 h-5 rounded-lg text-[#ff6200] focus:ring-[#ff6200] border-slate-300 dark:border-slate-600 cursor-pointer"
+                className="w-5 h-5 rounded-lg text-[#bef264] focus:ring-[#bef264] border-slate-300 dark:border-slate-600 cursor-pointer"
               />
             </label>
           </div>
 
           {/* CONFIGURAÇÃO DO ITEM ACADEMIA (NOVO REQUISITO) */}
           {temCarregamento && (
-          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1e293b] border border-slate-200 dark:border-[#293548] space-y-2">
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#2a2a2a] space-y-2">
             <label className="flex items-center justify-between cursor-pointer">
               <div className="flex items-center gap-2.5">
-                <div className={`p-2 rounded-xl ${temAcademia ? 'bg-[#ff6200]/10 text-[#ff6200]' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
+                <div className={`p-2 rounded-xl ${temAcademia ? 'bg-[#bef264]/10 text-[#bef264]' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
                   <Dumbbell className="w-4 h-4" />
                 </div>
                 <div>
@@ -420,7 +420,7 @@ export function FormVeiculo({
                 type="checkbox"
                 checked={temAcademia}
                 onChange={(e) => setTemAcademia(e.target.checked)}
-                className="w-5 h-5 rounded-lg text-[#ff6200] focus:ring-[#ff6200] border-slate-300 dark:border-slate-600 cursor-pointer"
+                className="w-5 h-5 rounded-lg text-[#bef264] focus:ring-[#bef264] border-slate-300 dark:border-slate-600 cursor-pointer"
               />
             </label>
           </div>
@@ -473,7 +473,7 @@ export function FormVeiculo({
               <button
                 type="submit"
                 disabled={loading}
-                className="px-5 py-2.5 bg-[#ff6200] hover:bg-[#ec7000] text-white font-bold text-xs rounded-xl shadow-md shadow-orange-500/20 flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
+                className="px-5 py-2.5 bg-[#bef264] hover:bg-[#d9f99d] text-white font-bold text-xs rounded-xl shadow-md shadow-lime-300/20 flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
                 <span>{loading ? 'Salvando...' : 'Salvar Veículo'}</span>
