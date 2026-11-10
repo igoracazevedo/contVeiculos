@@ -14,6 +14,7 @@ import {
 } from '@/lib/utils';
 import { LogoBadge } from '@/components/LogoBadge';
 import { CarCard } from '@/components/CarCard';
+import { getVehicleDisplayPhoto, getDefaultVehiclePhoto } from '@/lib/vehiclePhotos';
 import { HierarquiaAnoMes } from '@/components/HierarquiaAnoMes';
 import { GraficosScreen } from '@/components/GraficosScreen';
 import { FormVeiculo } from '@/components/FormVeiculo';
@@ -1082,43 +1083,46 @@ export default function HomePage() {
             </button>
           </div>
 
-          {/* =========================================================================
-              COMBOBOX DE SELEÇÃO DE VEÍCULO (Substitui barra e memoriza último veículo)
-             ========================================================================= */}
-          {veiculos.length > 0 && (
-            <div className="iaz-card p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-lime-300/10 text-[#bef264] flex-shrink-0">
-                  <Car className="w-4 h-4" />
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider block">
-                    Filtrar por Veículo
-                  </span>
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    {selectedPlaca
-                      ? `${selectedPlaca} • ${
-                          veiculos.find((v) => v.placa === selectedPlaca)?.modelo || ''
-                        }`
-                      : `Frota Completa (${veiculos.length} veículos)`}
-                  </span>
-                </div>
-              </div>
-
-              <div className="w-full sm:w-auto">
-                <select
-                  value={selectedPlaca || ''}
-                  onChange={(e) => handleSelectPlaca(e.target.value ? e.target.value : null)}
-                  className="w-full sm:min-w-[240px] px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2a2a2a] bg-white dark:bg-[#1f1f1f] text-slate-900 dark:text-slate-100 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#bef264] cursor-pointer shadow-2xs"
-                >
-                  <option value="">🚗 Todos os Veículos ({veiculos.length})</option>
-                  {veiculos.map((v) => (
-                    <option key={v.placa} value={v.placa}>
-                      {v.placa} • {v.marca} {v.modelo}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {/* Seleção de veículo em bolhas: Todos + cada veículo com foto e placa (como o filtro de pets do Pets Saúde) */}
+          {veiculos.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6 pb-1 [scrollbar-width:none]" role="tablist" aria-label="Escolher veículo">
+              <button
+                role="tab"
+                aria-selected={!selectedPlaca}
+                onClick={() => handleSelectPlaca(null)}
+                className={`shrink-0 flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium border transition-colors ${
+                  !selectedPlaca ? 'bg-white/90 text-black border-transparent' : 'bg-white/[0.06] text-white/85 border-white/10 hover:bg-white/10'
+                }`}
+              >
+                <Car className="w-4 h-4" />
+                Todos
+              </button>
+              {veiculos.map((v) => {
+                const ativo = selectedPlaca === v.placa;
+                return (
+                  <button
+                    key={v.placa}
+                    role="tab"
+                    aria-selected={ativo}
+                    onClick={() => handleSelectPlaca(v.placa)}
+                    className={`shrink-0 flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-4 text-sm font-medium border transition-colors ${
+                      ativo ? 'bg-white/90 text-black border-transparent' : 'bg-white/[0.06] text-white/85 border-white/10 hover:bg-white/10'
+                    }`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={getVehicleDisplayPhoto(v)}
+                      alt=""
+                      className="w-7 h-7 rounded-full object-cover bg-white/10 shrink-0"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = getDefaultVehiclePhoto(v.marca, v.modelo);
+                      }}
+                    />
+                    <span className="font-mono tracking-wider">{v.placa}</span>
+                  </button>
+                );
+              })}
             </div>
           )}
 
@@ -1254,63 +1258,6 @@ export default function HomePage() {
                         </div>
                       )}
                     </div>
-                  </div>
-
-                  {/* Carros em Destaque */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between px-1">
-                      <span className="text-[11px] uppercase tracking-wide text-slate-500 font-bold">
-                        Veículo Ativo
-                      </span>
-                      <button
-                        onClick={() => setActiveTab('veiculos')}
-                        className="text-xs font-bold text-[#bef264] hover:text-[#d9f99d]"
-                      >
-                        Ver todos →
-                      </button>
-                    </div>
-
-                    {veiculos.length === 0 ? (
-                      <div className="iaz-card p-6 text-center space-y-3">
-                        <Car className="w-10 h-10 text-slate-400 mx-auto" />
-                        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                          Nenhum veículo cadastrado
-                        </h4>
-                        <p className="text-xs text-slate-500 max-w-xs mx-auto">
-                          Cadastre seu carro para começar a registrar consumo com fotos públicas sem direitos autorais.
-                        </p>
-                        <button
-                          onClick={() => {
-                            setVehicleToEdit(null);
-                            setIsVehicleModalOpen(true);
-                          }}
-                          className="px-4 py-2 bg-[#bef264] hover:bg-[#d9f99d] text-white text-xs font-bold rounded-xl shadow-md transition-all"
-                        >
-                          Cadastrar Veículo
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {veiculos
-                          .filter((v) => !selectedPlaca || v.placa === selectedPlaca)
-                          .map((v) => (
-                            <CarCard
-                              key={v.placa}
-                              veiculo={v}
-                              abastecimentos={abastecimentos}
-                              recargas={recargas}
-                              isSelected={selectedPlaca === v.placa}
-                              onSelect={() => handleSelectPlaca(v.placa)}
-                              onEdit={(veic) => {
-                                setVehicleToEdit(veic);
-                                setIsVehicleModalOpen(true);
-                              }}
-                              onDelete={handleDeleteVeiculo}
-                              hideValues={hideValues}
-                            />
-                          ))}
-                      </div>
-                    )}
                   </div>
 
                   {/* Últimos Lançamentos */}
