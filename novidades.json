@@ -1,0 +1,18 @@
+[
+  {
+    "versao": "0.2.0",
+    "data": "2026-11-11",
+    "itens": [
+      "Quando sair uma versão nova, o app avisa em tela cheia, mostra o que mudou e tem o botão Atualizar aplicativo."
+    ]
+  },
+  {
+    "versao": "0.1.0",
+    "data": "2026-11-11",
+    "itens": [
+      "Visual novo, no padrão do Pets Saúde: fundo escuro, cartões grafite, verde-limão e barra inferior flutuante.",
+      "Início com seleção de veículo em bolhas (Todos, foto e placa).",
+      "Veículo sem carregamento esconde a parte elétrica."
+    ]
+  }
+]

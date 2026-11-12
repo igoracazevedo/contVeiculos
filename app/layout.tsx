@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import NovaVersao from '../components/NovaVersao';
 
 export const metadata: Metadata = {
   title: 'LitroWatt IAZ',
@@ -34,6 +35,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="dark dark-theme">
       <body className="min-h-screen select-none">
+        <NovaVersao />
         {children}
         <script
           dangerouslySetInnerHTML={{
