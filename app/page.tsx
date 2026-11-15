@@ -13,6 +13,7 @@ import {
   getMonthName,
 } from '@/lib/utils';
 import { LogoBadge } from '@/components/LogoBadge';
+import { TelaAbertura, useAbertura } from '@/components/TelaAbertura';
 import { CarCard } from '@/components/CarCard';
 import { getVehicleDisplayPhoto, getDefaultVehiclePhoto } from '@/lib/vehiclePhotos';
 import { HierarquiaAnoMes } from '@/components/HierarquiaAnoMes';
@@ -80,6 +81,8 @@ export default function HomePage() {
 
   // Estados de controle de UI
   const [loading, setLoading] = useState(true);
+  // Abertura até os dados da 1ª tela carregarem
+  const abertura = useAbertura(!loading);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<{ text: string; type?: 'success' | 'error' } | null>(null);
@@ -776,12 +779,7 @@ export default function HomePage() {
   // Condicionais de Carregamento e Bloqueio
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex flex-col justify-center items-center px-4">
-        <LogoBadge size="lg" className="animate-bounce mb-3" />
-        <p className="text-xs text-slate-300 font-semibold tracking-wide">
-          Carregando LitroWatt IAZ...
-        </p>
-      </div>
+      <TelaAbertura texto="Entrando" />
     );
   }
 
@@ -810,6 +808,7 @@ export default function HomePage() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#0a0a0a] text-white">
+      {abertura.visivel && <TelaAbertura saindo={abertura.saindo} />}
       <div className="aurora" />
       {/* Toast Padrão IAZ: Canto Superior Direito, Azul-Marinho com borda Laranja */}
       {toastMessage && (
