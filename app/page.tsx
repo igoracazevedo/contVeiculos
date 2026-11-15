@@ -1694,7 +1694,7 @@ export default function HomePage() {
 
       {/* Barra inferior flutuante em pílula (visual do Pets Saúde) */}
       <nav className="fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(env(safe-area-inset-bottom),14px)] pointer-events-none">
-        <div className="max-w-xl mx-auto pointer-events-auto flex items-center rounded-full bg-[#1c1c1c]/90 backdrop-blur-xl border border-white/10 p-1.5 shadow-2xl shadow-black/60">
+        <div className="max-w-xl mx-auto pointer-events-auto flex items-center rounded-full p-1.5 nav-flutuante">
           {navItems.map((item) => {
             const isActive = activeTab === item.id;
             const IconComponent = item.icon;
@@ -1705,7 +1705,7 @@ export default function HomePage() {
                 aria-label={item.label}
                 title={item.label}
                 className={`flex-1 h-12 rounded-full grid place-items-center transition-colors ${
-                  isActive ? 'bg-black text-lime-300' : 'text-white/70 hover:text-white'
+                  isActive ? 'nav-ativa' : 'nav-item'
                 }`}
               >
                 <IconComponent className="w-[22px] h-[22px]" strokeWidth={1.8} />
