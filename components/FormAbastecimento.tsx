@@ -2,7 +2,7 @@
 
 import ComboInput from './ComboInput';
 import React, { useState, useEffect } from 'react';
-import { Abastecimento, TipoGasolina, Veiculo } from '@/types/database';
+import { Abastecimento, TipoGasolina, Veiculo, TIPOS_COMBUSTIVEL, NOME_COMBUSTIVEL } from '@/types/database';
 import {
   formatCurrency,
   formatNumber,
@@ -256,8 +256,8 @@ export function FormAbastecimento({
             <label className="text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
               Tipo de Combustível *
             </label>
-            <div className="grid grid-cols-3 gap-2">
-              {(['COMUM', 'ADITIVADA', 'PODIUM'] as TipoGasolina[]).map((tipo) => (
+            <div className="grid grid-cols-4 gap-2">
+              {TIPOS_COMBUSTIVEL.map((tipo) => (
                 <button
                   key={tipo}
                   type="button"
@@ -268,7 +268,7 @@ export function FormAbastecimento({
                       : 'bg-slate-50 dark:bg-[#1f1f1f] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#2a2a2a] hover:border-[#bef264]/40'
                   }`}
                 >
-                  {tipo}
+                  {NOME_COMBUSTIVEL[tipo]}
                 </button>
               ))}
             </div>

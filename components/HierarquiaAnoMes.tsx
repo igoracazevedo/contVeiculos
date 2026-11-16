@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Abastecimento, Recarga } from '@/types/database';
+import { Abastecimento, Recarga, NOME_COMBUSTIVEL } from '@/types/database';
 import {
   formatCurrency,
   formatNumber,
@@ -413,14 +413,16 @@ export function HierarquiaAnoMes({
                                       </span>
                                       <span
                                         className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${
-                                          item.tipo_gasolina === 'PODIUM'
+                                          item.tipo_gasolina === 'ETANOL'
+                                            ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
+                                            : item.tipo_gasolina === 'PODIUM'
                                             ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30'
                                             : item.tipo_gasolina === 'ADITIVADA'
                                             ? 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30'
                                             : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                                         }`}
                                       >
-                                        {item.tipo_gasolina}
+                                        {NOME_COMBUSTIVEL[item.tipo_gasolina as keyof typeof NOME_COMBUSTIVEL] ?? item.tipo_gasolina}
                                       </span>
                                     </div>
 

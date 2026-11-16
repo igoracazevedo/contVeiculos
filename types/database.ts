@@ -1,4 +1,16 @@
-export type TipoGasolina = 'COMUM' | 'ADITIVADA' | 'PODIUM';
+export type TipoGasolina = 'ETANOL' | 'COMUM' | 'ADITIVADA' | 'PODIUM';
+
+/** Ordem e nomes dos combustíveis como aparecem na tela */
+export const TIPOS_COMBUSTIVEL: TipoGasolina[] = ['ETANOL', 'COMUM', 'ADITIVADA', 'PODIUM'];
+export const NOME_COMBUSTIVEL: Record<TipoGasolina, string> = {
+  ETANOL: 'Etanol',
+  COMUM: 'Comum',
+  ADITIVADA: 'Aditivada',
+  PODIUM: 'Podium',
+};
+/** Ex.: "Etanol", "Gasolina Comum" */
+export const descricaoCombustivel = (t: string) =>
+  t === 'ETANOL' ? 'Etanol' : `Gasolina ${NOME_COMBUSTIVEL[t as TipoGasolina] ?? t}`;
 export type UserRole = 'admin' | 'usuario';
 
 export interface UsuarioLiberado {

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Veiculo, Abastecimento, Recarga, UsuarioLiberado } from '@/types/database';
+import { Veiculo, Abastecimento, Recarga, UsuarioLiberado, descricaoCombustivel } from '@/types/database';
 import {
   formatCurrency,
   formatNumber,
@@ -1309,7 +1309,7 @@ export default function HomePage() {
                                   <div>
                                     <div className="flex items-center gap-1.5">
                                       <span className="font-bold text-slate-900 dark:text-slate-100">
-                                        Gasolina {a.tipo_gasolina}
+                                        {descricaoCombustivel(a.tipo_gasolina)}
                                       </span>
                                       <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold">
                                         {a.placa}
